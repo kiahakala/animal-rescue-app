@@ -17,6 +17,8 @@ const postSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	latitude: Number,
+  longitude: Number,
 	timestamp: Date,
 })
 

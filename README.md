@@ -22,7 +22,7 @@ Kaikkia toimintoja ei välttämättä implementoida ensimmäiseen versioon, mutt
 - frontend: JavaScript
 - tietokanta: MongoDB
 - autentikointi: JWT (JSON Web Token)
-- sijaintitieto: Google Maps API
+- sijaintitieto: OpenStreetMap ja Leaflet.js
 - julkaisu: alustavasti Render
 
 ## Rakenne
@@ -46,3 +46,5 @@ Kirjautumista varten on luotu login-reitti. Kun käyttäjä kirjautuu lomakkeell
 Ympäristömuuttujiin on tallennettu merkkijonona digitaalinen allekirjoitus _SECRET_. Sillä varmistetaan, että vain salaisuuden tietävät voivat generoida validin tokenin.
 
 ## Sijaintitieto
+
+Sijaintitieto tuotetaan avoimen lähdekoodin Leaflet.js-kirjaston avulla. Leaflet hyödyntää OpenStreetMapin karttatietoja. Käyttäjä voi lisätä ilmoitukseen sijainnin klikkaamalla karttaa. Sijainti tallennetaan tietokantaan koordinaatteina.
