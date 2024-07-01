@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 
 
 postsRouter.get('/', async (request, response) => {
+	// reference to document in another collection
 	const posts = await Post.find({}).populate('user', { name: 1, email: 1, location: 1 })
 	response.json(posts.map(post => post.toJSON()))
 })

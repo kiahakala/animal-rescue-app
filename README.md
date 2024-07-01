@@ -39,4 +39,10 @@ Ilmoitukseen tallennetaan otsikko, kuvaus, ilmoituksen julkaisija, sijainti ja a
 
 ## Autentikointi
 
+Kun käyttäjä luo tunnuksen, hänen salasanansa tallennetaan tietokantaan hashattuna. Tässä käytetään bcrypt-kirjastoa.
+
+Kirjautumista varten on luotu login-reitti. Kun käyttäjä kirjautuu lomakkeella sisään, frontend lähettää kirjautumistiedot POST-pyynnöllä login-reitille. Jos kirjautumistiedot ovat oikein, palvelin generoi yksilöivän tokenin. Selain tallentaa tokenin. Kun käyttäjä tekee kirjautumista edellyttäviä toimenpiteitä, token lähetetään mukana pyynnössä. Tokenin avulla palvelin tunnistaa käyttäjän.
+
+Ympäristömuuttujiin on tallennettu merkkijonona digitaalinen allekirjoitus _SECRET_. Sillä varmistetaan, että vain salaisuuden tietävät voivat generoida validin tokenin.
+
 ## Sijaintitieto
