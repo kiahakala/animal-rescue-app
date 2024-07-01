@@ -1,0 +1,7 @@
+DELETE http://localhost:10000/posts/6682690d6350d5c691496d83
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVzdCIsImlkIjoiNjY4MjY4ZDU2MzUwZDVjNjkxNDk2ZDdmIiwiaWF0IjoxNzE5ODIyNTgwLCJleHAiOjE3MTk4MjYxODB9.rJ1sdWw2DqbhhTZrlGBv21Ud1kMJjJ6voxDMQqBQtWU
+
+{
+
+}

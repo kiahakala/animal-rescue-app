@@ -8,7 +8,7 @@ Tarkoituksena on kehittää sovellus luonnonvaraisten eläinten pelastusringiksi
 
 Sovelluksen keskeiset toiminnot:
 
-- käyttäjätunnuksen luominen ja kirjautuminen (rekisteröityminen auttajana tai löytäjänä)
+- käyttäjätunnuksen luominen ja kirjautuminen
 - CRUD-toimenpiteet
 - sijaintitieto (mahdollisesti suodatus sijainnin perusteella)
 - mahdollisuus reagoida ilmoituksiin
@@ -24,3 +24,19 @@ Kaikkia toimintoja ei välttämättä implementoida ensimmäiseen versioon, mutt
 - autentikointi: JWT (JSON Web Token)
 - sijaintitieto: Google Maps API
 - julkaisu: alustavasti Render
+
+## Rakenne
+
+Koodin selkeyttämiseksi sovellus on jaettu moduuleihin. Backendin puolella CRUD-operaatiot suoritetaan controllers-moduuleissa. Skeemat määritellään models-moduuleissa. Konfiguraatio on eriytetty utils-moduuliin.
+
+## Tietokanta
+
+Tietokannassa on kaksi kokoelmaa: käyttäjät ja ilmoitukset.
+
+Käyttäjään tallennetaan nimi, sähköpostiosoite, salasana, ilmoitukset ja sijainti.
+
+Ilmoitukseen tallennetaan otsikko, kuvaus, ilmoituksen julkaisija, sijainti ja aikaleima.
+
+## Autentikointi
+
+## Sijaintitieto

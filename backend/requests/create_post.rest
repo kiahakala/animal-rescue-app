@@ -1,0 +1,12 @@
+POST http://localhost:10000/posts/
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVzdCIsImlkIjoiNjY4MjY4ZDU2MzUwZDVjNjkxNDk2ZDdmIiwiaWF0IjoxNzE5ODIyNTgwLCJleHAiOjE3MTk4MjYxODB9.rJ1sdWw2DqbhhTZrlGBv21Ud1kMJjJ6voxDMQqBQtWU
+
+
+{
+    "title": "Tehdään uusi ilmoitus",
+		"description": "Tervepä terve ja moikka moi",
+		"userId": "66825db453c718475f6ef5ee",
+		"location": "Test Location",
+		"timestamp": "2021-12-12T12:12:12.000Z"
+}

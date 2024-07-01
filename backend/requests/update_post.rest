@@ -1,0 +1,10 @@
+PUT http://localhost:10000/posts/6682690d6350d5c691496d83
+Content-Type: application/json
+
+{
+    "title": "Test Name Jee",
+		"description": "Desc updated!",
+		"user": "668268d56350d5c691496d7f",
+		"location": "Test Location",
+		"timestamp": "2021-12-12T12:12:12.000Z"
+}
