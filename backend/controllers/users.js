@@ -49,6 +49,7 @@ usersRouter.post("/", async (req, res) => {
     email: body.email,
     passwordHash,
     location: body.location,
+		role: body.role,
   });
 
   const savedUser = await user.save();

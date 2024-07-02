@@ -14,12 +14,22 @@ document.addEventListener("DOMContentLoaded", () => {
     map.setView([latitude, longitude], 13);
   });
 
+  fetchUsers();
+
   fetchPosts();
+
+  async function fetchUsers() {
+    try {
+      const response = await fetch(`${baseUrl}/users`);
+      const users = await response.json();
+      console.log(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  }
 
   async function fetchPosts() {
     try {
-      // const response = await fetch(`${baseUrl}/posts/nearby?latitude=${latitude}&longitude=${longitude}&distance=10`);
-
       const response = await fetch(`${baseUrl}/posts`);
       const posts = await response.json();
       displayPosts(posts);
@@ -33,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const postsContainer = document.getElementById("posts");
     postsContainer.innerHTML = "";
 
-		const bounds = [];
+    const bounds = [];
 
     posts.forEach((post) => {
       const postElement = document.createElement("div");
@@ -47,40 +57,105 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log(post.latitude, post.longitude);
 
-    
-        let marker = L.marker([post.latitude, post.longitude]).addTo(map);
+      let marker = L.marker([post.latitude, post.longitude]).addTo(map);
 
-				
+      console.log(marker);
 
-				console.log(marker);
-
-        marker.bindPopup(`
+      marker.bindPopup(`
 					<h3>${post.title}</h3>
 					<p>${post.description}</p>
 					<p>Location: ${post.location}</p>
 				`);
 
-				bounds.push([post.latitude, post.longitude]);
-
-				if (bounds.length > 0) {
-					map.fitBounds(bounds);
-				}
-      
+      bounds.push([post.latitude, post.longitude]);
     });
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds);
+    }
   }
+
+  // Handle login
+  document.getElementById("login").addEventListener("click", () => {
+    document.getElementById("loginModal").style.display = "block";
+  });
+
+  document.getElementById("loginButton").addEventListener("click", async () => {
+    const name = document.getElementById("loginName").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+      const data = { name, password };
+      const response = await fetch(`${baseUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const user = await response.json();
+
+      console.log(user);
+
+      if (user.token) {
+        localStorage.setItem("token", user.token);
+        alert("Login successful!");
+        document.getElementById("loginModal").style.display = "none";
+      } else {
+        alert("Login failed!");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  });
+
+  // Handle register
+
+  document.getElementById("register").addEventListener("click", () => {
+    document.getElementById("registerModal").style.display = "block";
+  });
+
+  document
+    .getElementById("registerButton")
+    .addEventListener("click", async () => {
+      const name = document.getElementById("registerName").value;
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+      const location = document.getElementById("registerLocation").value;
+      const role = document.getElementById("registerRole");
+
+      console.log(role.value);
+
+      try {
+        const response = await fetch(`${baseUrl}/users`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            location,
+            role: role.value,
+          }),
+        });
+
+        const data = await response.json();
+
+        console.log(data);
+      } catch (error) {
+        console.error("Error logging in:", error);
+      }
+    });
+
+  // Close modals
+  const closeButtons = document.querySelectorAll(".closeButton");
+  closeButtons.forEach((closeButton) => {
+    closeButton.addEventListener("click", () => {
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("registerModal").style.display = "none";
+    });
+  });
 });
-
-// const map = L.map("map").setView([51.505, -0.09], 13);
-
-// let marker = L.marker([51.5, -0.09]).addTo(map);
-
-// let popup = L.popup();
-
-// function onMapClick(e) {
-//     popup
-//         .setLatLng(e.latlng)
-//         .setContent("You clicked the map at " + e.latlng.toString())
-//         .openOn(map);
-// }
-
-// map.on('click', onMapClick);

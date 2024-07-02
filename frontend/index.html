@@ -13,7 +13,8 @@
         <header>
             <h1>Animal Rescue App</h1>
             <nav>
-                <a href="#" id="login">Login</a>
+							<a href="#" id="login">Login</a>
+
                 <a href="#" id="register">Register</a>
             </nav>
         </header>
@@ -23,5 +24,30 @@
         </main>
     </div>
     <script src="main.js"></script>
+
+		<!-- Login Modal -->
+		<div id="loginModal" style="display:none;">
+			<button class="closeButton">X</button>
+			<h2>Login</h2>
+			<input type="text" id="loginName" placeholder="Name" required>
+			<input type="password" id="loginPassword" placeholder="Password" required>
+			<button id="loginButton">Login</button>
+			<button class="closeButton">Cancel</button>
+		</div>
+
+		<!-- Register Modal -->
+		<div id="registerModal" style="display:none;">
+			<button class="closeButton">X</button>
+			<h2>Register</h2>
+			<input type="text" id="registerName" placeholder="Name" required>
+			<input type="email" id="registerEmail" placeholder="Email" required>
+			<input type="password" id="registerPassword" placeholder="Password" required>
+			<input type="text" id="registerLocation" placeholder="Location" required>
+			<select name="role" id="registerRole">
+				<option value="user">User</option>
+				<option value="helper">Helper</option>
+			</select>
+			<button id="registerButton">Register</button>
+			<button class="closeButton">Cancel</button>
 </body>
 </html>
