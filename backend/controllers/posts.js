@@ -8,7 +8,6 @@ postsRouter.get("/", async (req, res) => {
   const posts = await Post.find({}).populate("user", {
     name: 1,
     email: 1,
-    location: 1,
 		timestamp: 1,
   });
   res.json(posts.map((post) => post.toJSON()));
@@ -58,18 +57,17 @@ postsRouter.post("/", async (req, res) => {
     title: body.title,
     description: body.description,
     user: user._id,
-    location: body.location,
     latitude: body.latitude,
     longitude: body.longitude,
     timestamp: body.timestamp,
   });
-  if (!body.location || !body.title) {
+  if (!body.title) {
     res.status(400).end();
   } else {
     const savedPost = await post.save();
     user.posts = user.posts.concat(savedPost._id);
     await user.save();
-    res.status(201).json(savedPost.toJSON());
+    res.status(201).json(savedPost);
   }
 });
 
@@ -79,7 +77,6 @@ postsRouter.put("/:id", async (req, res) => {
     title: body.title,
     description: body.description,
     user: body.user.id,
-    location: body.location,
     latitude: body.latitude,
     longitude: body.longitude,
     timestamp: body.timestamp,

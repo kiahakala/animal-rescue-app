@@ -1,53 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Animal Rescue App</title>
-    <link rel="stylesheet" href="styles.css">
-		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </head>
+  <body>
     <div id="app">
-        <header>
-            <h1>Animal Rescue App</h1>
-            <nav>
-							<a href="#" id="login">Login</a>
-
-                <a href="#" id="register">Register</a>
-            </nav>
-        </header>
-        <main>
-            <section id="posts"></section>
-						<div id="map" style="height: 400px;"></div>
-        </main>
+      <header>
+        <h1>Animal Rescue App</h1>
+        <nav>
+          <a href="#" id="login">Login</a>
+          <a href="#" id="register">Register</a>
+					<a href="#" id="profile" style="display: none">Profile</a>
+					<a href="#" id="createPost" style="display: none">Create Post</a>
+					<a href="#" id="logout" style="display: none">Logout</a>
+        </nav>
+      </header>
+      <main>
+				<div id="postForm" style="display: none">
+					<h2>Create Post</h2>
+					<input type="text" id="postTitle" placeholder="Title" required />
+					<textarea id="postDescription" placeholder="Description" required></textarea>
+					<input type="text" id="postCoords" placeholder="Coordinates" required />
+					<button id="postButton">Post</button>
+					<button id="cancelPost">Cancel</button>
+				</div>
+				<div id="map" style="height: 400px"></div>
+        <section id="posts"></section>
+      </main>
     </div>
-    <script src="main.js"></script>
+    
+    <!-- Login Modal -->
+    <div id="loginModal" style="display: none">
+      <button class="closeButton">X</button>
+      <h2>Login</h2>
+      <input type="text" id="loginName" placeholder="Name" required />
+      <input
+        type="password"
+        id="loginPassword"
+        placeholder="Password"
+        required
+      />
+      <button id="loginButton">Login</button>
+      <button class="closeButton">Cancel</button>
+    </div>
 
-		<!-- Login Modal -->
-		<div id="loginModal" style="display:none;">
-			<button class="closeButton">X</button>
-			<h2>Login</h2>
-			<input type="text" id="loginName" placeholder="Name" required>
-			<input type="password" id="loginPassword" placeholder="Password" required>
-			<button id="loginButton">Login</button>
-			<button class="closeButton">Cancel</button>
-		</div>
+    <!-- Register Modal -->
+    <div id="registerModal" style="display: none">
+      <button class="closeButton">X</button>
+      <h2>Register</h2>
+      <input type="text" id="registerName" placeholder="Name" required />
+      <input type="email" id="registerEmail" placeholder="Email" required />
+      <input
+        type="password"
+        id="registerPassword"
+        placeholder="Password"
+        required
+      />
+      <input
+        type="text"
+        id="registerLocation"
+        placeholder="Location"
+        required
+      />
+      <select name="role" id="registerRole">
+        <option value="user">User</option>
+        <option value="helper">Helper</option>
+      </select>
+      <button id="registerButton">Register</button>
+      <button class="closeButton">Cancel</button>
+    </div>
 
-		<!-- Register Modal -->
-		<div id="registerModal" style="display:none;">
-			<button class="closeButton">X</button>
-			<h2>Register</h2>
-			<input type="text" id="registerName" placeholder="Name" required>
-			<input type="email" id="registerEmail" placeholder="Email" required>
-			<input type="password" id="registerPassword" placeholder="Password" required>
-			<input type="text" id="registerLocation" placeholder="Location" required>
-			<select name="role" id="registerRole">
-				<option value="user">User</option>
-				<option value="helper">Helper</option>
-			</select>
-			<button id="registerButton">Register</button>
-			<button class="closeButton">Cancel</button>
-</body>
+		<script src="main.js"></script>
+  </body>
 </html>
