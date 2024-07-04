@@ -33,9 +33,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/users`);
       const users = await response.json();
       console.log(users);
+      createProfileLinks(users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
+  }
+
+  // Save user id as query parameter
+
+  function createProfileLinks(users) {
+    const profileLink = document.getElementById("profile");
+
+    users.forEach((user) => {
+      profileLink.href = `?id=${user.id}`;
+      console.log(profileLink.href);
+    });
+  }
+
+  // Get id as query parameter
+
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log(urlParams);
+    return urlParams.get(param);
   }
 
   // Get posts
@@ -44,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/posts`);
       const posts = await response.json();
       displayPosts(posts);
-      console.log(posts);
+      console.log(posts.map((post) => post.user));
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
@@ -55,7 +75,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const postsContainer = document.getElementById("posts");
     postsContainer.innerHTML = "";
 
+    const userPostsContainer = document.getElementById("userPosts");
+    userPostsContainer.innerHTML = "";
+
     const bounds = [];
+
+    const id = getQueryParam("id");
+    console.log(id);
+
+    // Filter posts to include only those that belong to the user with the specified ID
+    const userPosts = posts.filter((post) => post.user.id === id);
+
+    userPosts.forEach((post) => {
+      const userPostElement = document.createElement("div");
+      userPostElement.classList.add("post");
+      userPostElement.innerHTML = `
+            <h3>${post.title}</h3>
+            <p>${post.description}</p>
+						<p>Posted: ${post.timestamp}</p>`;
+
+      userPostsContainer.appendChild(userPostElement);
+    });
 
     posts.forEach((post) => {
       const postElement = document.createElement("div");
@@ -67,11 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			`;
       postsContainer.appendChild(postElement);
 
-      console.log(post.latitude, post.longitude);
-
       let marker = L.marker([post.latitude, post.longitude]).addTo(map);
-
-      console.log(marker);
 
       marker.bindPopup(`
 					<h3>${post.title}</h3>
@@ -89,16 +125,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle login
   document.getElementById("login").addEventListener("click", () => {
-		if (document.getElementById("registerModal").style.display === "block") {
-			document.getElementById("registerModal").style.display = "none";
-		}
+    if (document.getElementById("registerModal").style.display === "block") {
+      document.getElementById("registerModal").style.display = "none";
+    }
     document.getElementById("loginModal").style.display = "block";
   });
 
   document.getElementById("loginButton").addEventListener("click", async () => {
     const name = document.getElementById("loginName").value;
     const password = document.getElementById("loginPassword").value;
-    const userSpan = document.getElementById("user");
     const logout = document.getElementById("logout");
     const profile = document.getElementById("profile");
     const createPost = document.getElementById("createPost");
@@ -115,8 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const user = await response.json();
-
-      console.log(user);
 
       if (user.token) {
         localStorage.setItem("token", user.token);
@@ -150,10 +183,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle registration
 
-  document.getElementById("register").addEventListener("click", () => {
-		if (document.getElementById("loginModal").style.display === "block") {
-			document.getElementById("loginModal").style.display = "none";
-		}
+  document.getElementById("register").addEventListener("click", (e) => {
+    e.preventDefault();
+    if (document.getElementById("loginModal").style.display === "block") {
+      document.getElementById("loginModal").style.display = "none";
+    }
     document.getElementById("registerModal").style.display = "block";
   });
 
@@ -200,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeButton.addEventListener("click", () => {
       document.getElementById("loginModal").style.display = "none";
       document.getElementById("registerModal").style.display = "none";
+			document.getElementById("profileModal").style.display = "none";
     });
   });
 
@@ -207,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("logout").addEventListener("click", () => {
     localStorage.removeItem("token");
-    document.getElementById("user").style.display = "none";
     document.getElementById("logout").style.display = "none";
     document.getElementById("profile").style.display = "none";
     document.getElementById("createPost").style.display = "none";
@@ -258,7 +292,8 @@ document.addEventListener("DOMContentLoaded", () => {
     map.removeLayer(newMarker);
   });
 
-  document.getElementById("postButton").addEventListener("click", async () => {
+  document.getElementById("postButton").addEventListener("click", async (e) => {
+    e.preventDefault();
     const title = document.getElementById("postTitle").value;
     const description = document.getElementById("postDescription").value;
     const timestamp = new Date().toISOString();
@@ -290,4 +325,45 @@ document.addEventListener("DOMContentLoaded", () => {
     creatingPost = false;
     fetchPosts();
   });
+
+  // Handle profile
+
+  document.getElementById("profile").addEventListener("click", async (e) => {
+    e.preventDefault();
+    document.getElementById("profileModal").style.display = "block";
+
+    async function fetchUserById(userId) {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch(`${baseUrl}/users/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(userId);
+
+        const user = await response.json();
+        displayProfile(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
+    const userId = getQueryParam("id");
+    if (userId) {
+      fetchUserById(userId);
+    } else {
+      alert("No user ID specified");
+    }
+  });
+
+  function displayProfile(user) {
+    document.getElementById("profileName").value = user.name;
+    document.getElementById("profileEmail").value = user.email;
+    document.getElementById("profileLocation").value = user.location;
+    document.getElementById("profileRole").value = user.role;
+  }
 });

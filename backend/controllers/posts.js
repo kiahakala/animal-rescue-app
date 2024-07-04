@@ -13,21 +13,6 @@ postsRouter.get("/", async (req, res) => {
   res.json(posts.map((post) => post.toJSON()));
 });
 
-// postsRouter.get('/nearby', async (req, res) => {
-//   const { latitude, longitude, distance } = req.query;
-
-//   // Calculate the bounding box for the given distance
-//   const radius = distance / 6371; // Convert distance to radians (Earth's radius in km)
-//   const nearbyPosts = await Post.find({
-//     latitude: { $gte: parseInt(latitude) - radius, $lte: parseInt(latitude) + radius },
-//     longitude: { $gte: parseInt(longitude) - radius, $lte: parseInt(longitude) + radius }
-//   });
-
-// 	console.log(latitude);
-
-//   res.json(nearbyPosts);
-// });
-
 postsRouter.get("/:id", async (req, res) => {
   const post = await Post.findById(req.params.id);
   if (post) {

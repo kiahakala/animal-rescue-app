@@ -22,27 +22,58 @@
       <header>
         <h1>Animal Rescue App</h1>
         <nav>
-          <a href="#" id="login">Login</a>
-          <a href="#" id="register">Register</a>
-					<a href="#" id="profile" style="display: none">Profile</a>
-					<a href="#" id="createPost" style="display: none">Create Post</a>
-					<a href="#" id="logout" style="display: none">Logout</a>
+          <a href="#loginModal" id="login">Login</a>
+          <a href="#registerModal" id="register">Register</a>
+          <a href="#" id="profile" style="display: none">Profile</a>
+          <a href="#" id="createPost" style="display: none">Create Post</a>
+          <a href="#" id="logout" style="display: none">Logout</a>
         </nav>
       </header>
       <main>
-				<div id="postForm" style="display: none">
-					<h2>Create Post</h2>
-					<input type="text" id="postTitle" placeholder="Title" required />
-					<textarea id="postDescription" placeholder="Description" required></textarea>
-					<input type="text" id="postCoords" placeholder="Coordinates" required />
-					<button id="postButton">Post</button>
-					<button id="cancelPost">Cancel</button>
-				</div>
-				<div id="map" style="height: 400px"></div>
+        <div id="postForm" style="display: none">
+          <h2>Create Post</h2>
+          <input type="text" id="postTitle" placeholder="Title" required />
+          <textarea
+            id="postDescription"
+            placeholder="Description"
+            required
+          ></textarea>
+          <input
+            type="text"
+            id="postCoords"
+            placeholder="Coordinates"
+            required
+          />
+          <button id="postButton">Post</button>
+          <button id="cancelPost">Cancel</button>
+        </div>
+        <div id="map" style="height: 400px"></div>
         <section id="posts"></section>
       </main>
     </div>
-    
+
+    <!-- Profile Modal -->
+    <div id="profileModal" style="display: none">
+      <button class="closeButton">X</button>
+      <h2>Profile</h2>
+      <section id="userPosts"></section>
+      <input type="text" id="profileName" placeholder="Name" required />
+      <input type="email" id="profileEmail" placeholder="Email" required />
+      <input
+        type="password"
+        id="profilePassword"
+        placeholder="Password"
+        required
+      />
+      <input type="text" id="profileLocation" placeholder="Location" required />
+      <select name="role" id="profileRole">
+        <option value="user">User</option>
+        <option value="helper">Helper</option>
+      </select>
+      <button id="profileButton">Update</button>
+      <button class="closeButton">Cancel</button>
+    </div>
+
     <!-- Login Modal -->
     <div id="loginModal" style="display: none">
       <button class="closeButton">X</button>
@@ -84,6 +115,6 @@
       <button class="closeButton">Cancel</button>
     </div>
 
-		<script src="main.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>

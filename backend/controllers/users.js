@@ -14,7 +14,7 @@ usersRouter.get("/", async (req, res) => {
 });
 
 usersRouter.get("/:id", async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).select('-password');
   if (user) {
     res.json(user.toJSON());
   } else {
