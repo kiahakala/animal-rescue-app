@@ -22,30 +22,30 @@
       <header>
         <h1>Animal Rescue App</h1>
         <nav>
-          <a href="#loginModal" id="login">Login</a>
-          <a href="#registerModal" id="register">Register</a>
-          <a href="#" id="profile" style="display: none">Profile</a>
-          <a href="#" id="createPost" style="display: none">Create Post</a>
-          <a href="#" id="logout" style="display: none">Logout</a>
+          <a href="#loginModal" id="login">Kirjaudu sisään</a>
+          <a href="#registerModal" id="register">Rekisteröidy</a>
+          <a href="#" id="profile" style="display: none">Profiili</a>
+          <a href="#" id="createPost" style="display: none">Luo ilmoitus</a>
+          <a href="#" id="logout" style="display: none">Kirjaudu ulos</a>
         </nav>
       </header>
       <main>
         <div id="postForm" style="display: none">
-          <h2>Create Post</h2>
-          <input type="text" id="postTitle" placeholder="Title" required />
+          <h2>Luo ilmoitus</h2>
+          <input type="text" id="postTitle" placeholder="Otsikko" required />
           <textarea
             id="postDescription"
-            placeholder="Description"
+            placeholder="Kuvaus"
             required
           ></textarea>
           <input
             type="text"
             id="postCoords"
-            placeholder="Coordinates"
+            placeholder="Sijainti"
             required
           />
-          <button id="postButton">Post</button>
-          <button id="cancelPost">Cancel</button>
+          <button id="postButton">Lähetä</button>
+          <button id="cancelPost">Peruuta</button>
         </div>
         <div id="map" style="height: 400px"></div>
         <section id="posts"></section>
@@ -55,29 +55,29 @@
     <!-- Profile Modal -->
     <div id="profileModal" style="display: none">
       <button class="closeButton">X</button>
-      <h2>Profile</h2>
+      <h2>Profiili</h2>
       <section id="userPosts"></section>
-      <input type="text" id="profileName" placeholder="Name" required />
-      <input type="email" id="profileEmail" placeholder="Email" required />
+      <input type="text" id="profileName" placeholder="Nimi" required />
+      <input type="email" id="profileEmail" placeholder="Sähköpostiosoite" required />
       <input
         type="password"
         id="profilePassword"
-        placeholder="Password"
+        placeholder="Salasana"
         required
       />
-      <input type="text" id="profileLocation" placeholder="Location" required />
+      <input type="text" id="profileLocation" placeholder="Sijainti" required />
       <select name="role" id="profileRole">
-        <option value="user">User</option>
-        <option value="helper">Helper</option>
+        <option value="user">Löytäjä</option>
+        <option value="helper">Auttaja</option>
       </select>
-      <button id="profileButton">Update</button>
-      <button class="closeButton">Cancel</button>
+      <button id="profileButton">Päivitä</button>
+      <button class="closeButton">Peruuta</button>
     </div>
 
     <!-- Login Modal -->
     <div id="loginModal" style="display: none">
       <button class="closeButton">X</button>
-      <h2>Login</h2>
+      <h2>Kirjaudu sisään</h2>
       <input type="text" id="loginName" placeholder="Name" required />
       <input
         type="password"
@@ -85,34 +85,34 @@
         placeholder="Password"
         required
       />
-      <button id="loginButton">Login</button>
-      <button class="closeButton">Cancel</button>
+      <button id="loginButton">Kirjaudu</button>
+      <button class="closeButton">Peruuta</button>
     </div>
 
     <!-- Register Modal -->
     <div id="registerModal" style="display: none">
       <button class="closeButton">X</button>
-      <h2>Register</h2>
-      <input type="text" id="registerName" placeholder="Name" required />
-      <input type="email" id="registerEmail" placeholder="Email" required />
+      <h2>Rekisteröidy</h2>
+      <input type="text" id="registerName" placeholder="Nimi" required />
+      <input type="email" id="registerEmail" placeholder="Sähköpostiosoite" required />
       <input
         type="password"
         id="registerPassword"
-        placeholder="Password"
+        placeholder="Salasana"
         required
       />
       <input
         type="text"
         id="registerLocation"
-        placeholder="Location"
+        placeholder="Sijainti"
         required
       />
       <select name="role" id="registerRole">
-        <option value="user">User</option>
-        <option value="helper">Helper</option>
+        <option value="user">Löytäjä</option>
+        <option value="helper">Auttaja</option>
       </select>
-      <button id="registerButton">Register</button>
-      <button class="closeButton">Cancel</button>
+      <button id="registerButton">Rekisteröidy</button>
+      <button class="closeButton">Peruuta</button>
     </div>
 
     <script src="main.js"></script>

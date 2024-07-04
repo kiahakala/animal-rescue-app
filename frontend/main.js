@@ -24,7 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("createPost").style.display = "block";
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
+		const userId = localStorage.getItem('userId');
     fetchPosts();
+		//fetchUserData(userId);
   }
 
   // Get users
@@ -33,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/users`);
       const users = await response.json();
       console.log(users);
-      createProfileLinks(users);
+      //createProfileLinks(users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -41,22 +43,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Save user id as query parameter
 
-  function createProfileLinks(users) {
-    const profileLink = document.getElementById("profile");
+  // function createProfileLinks(users) {
+  //   const profileLink = document.getElementById("profile");
 
-    users.forEach((user) => {
-      profileLink.href = `?id=${user.id}`;
-      console.log(profileLink.href);
-    });
-  }
+  //   users.forEach((user) => {
+  //     profileLink.href = `?id=${user.id}`;
+  //     console.log(profileLink.href);
+  //   });
+  // }
 
   // Get id as query parameter
 
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    console.log(urlParams);
-    return urlParams.get(param);
-  }
+  // function getQueryParam(param) {
+  //   let params = new URL(document.location).searchParams;
+  //   let id = params.get(param);
+  //   return id;
+	// }
 
   // Get posts
   async function fetchPosts() {
@@ -80,39 +82,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const bounds = [];
 
-    const id = getQueryParam("id");
+    const id = localStorage.getItem("userId");
     console.log(id);
 
     // Filter posts to include only those that belong to the user with the specified ID
     const userPosts = posts.filter((post) => post.user.id === id);
 
     userPosts.forEach((post) => {
+      const date = new Date(post.timestamp);
       const userPostElement = document.createElement("div");
+      let postAttr = document.createAttribute("id");
+      postAttr.value = post.id;
+      userPostElement.setAttributeNode(postAttr);
       userPostElement.classList.add("post");
       userPostElement.innerHTML = `
             <h3>${post.title}</h3>
             <p>${post.description}</p>
-						<p>Posted: ${post.timestamp}</p>`;
+						<p>Posted: ${date.toLocaleString("fi-FI")}</p>`;
+      let delSpan = document.createElement("span");
+      let delAttr = document.createAttribute("class");
+      delAttr.value = "delete";
+      delSpan.setAttributeNode(delAttr);
+      let x = document.createTextNode("❌");
+      delSpan.appendChild(x);
+      delSpan.addEventListener("click", () => {
+        removePost(post.id);
+      });
+      userPostElement.appendChild(delSpan);
 
       userPostsContainer.appendChild(userPostElement);
     });
 
     posts.forEach((post) => {
+      const date = new Date(post.timestamp);
       const postElement = document.createElement("div");
       postElement.classList.add("post");
       postElement.innerHTML = `
 				<h3>${post.title}</h3>
 				<p>${post.description}</p>
-				<p>Posted: ${post.timestamp}</p>
+				<p>Julkaistu: ${date.toLocaleString("fi-FI")}</p>
 			`;
       postsContainer.appendChild(postElement);
 
       let marker = L.marker([post.latitude, post.longitude]).addTo(map);
 
+      let location = "";
+
+      async function fetchReverse(latitude, longitude) {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2`
+        );
+        const data = await response.json();
+        console.log(data.display_name);
+        location = data.display_name;
+        return location;
+      }
+
       marker.bindPopup(`
 					<h3>${post.title}</h3>
 					<p>${post.description}</p>
-					<p>Location: ${post.location}</p>
+					<p>${location}</p>
+					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
 				`);
 
       bounds.push([post.latitude, post.longitude]);
@@ -150,9 +180,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const user = await response.json();
+			console.log(user.id);
 
       if (user.token) {
         localStorage.setItem("token", user.token);
+				localStorage.setItem("userId", user.id);
         alert("Login successful!");
         document.getElementById("loginModal").style.display = "none";
         document.getElementById("login").style.display = "none";
@@ -166,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
           localStorage.removeItem("token");
+					localStorage.removeItem("userId");
           logout.style.display = "none";
           profile.style.display = "none";
           createPost.style.display = "none";
@@ -234,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeButton.addEventListener("click", () => {
       document.getElementById("loginModal").style.display = "none";
       document.getElementById("registerModal").style.display = "none";
-			document.getElementById("profileModal").style.display = "none";
+      document.getElementById("profileModal").style.display = "none";
     });
   });
 
@@ -242,6 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("logout").addEventListener("click", () => {
     localStorage.removeItem("token");
+		localStorage.removeItem("userId");
     document.getElementById("logout").style.display = "none";
     document.getElementById("profile").style.display = "none";
     document.getElementById("createPost").style.display = "none";
@@ -256,7 +290,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let longitude = 0;
   let newMarker = {};
 
-  document.getElementById("createPost").addEventListener("click", () => {
+  document.getElementById("createPost").addEventListener("click", (e) => {
+    e.preventDefault();
     document.getElementById("postForm").style.display = "block";
     creatingPost = true;
     updateMapClickListener();
@@ -271,8 +306,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onMapClick(e) {
-    marker = new L.marker(e.latlng, { draggable: "true" });
-    marker.on("dragend", function (event) {
+    newMarker = new L.marker(e.latlng, { draggable: "true" });
+    latitude = newMarker.getLatLng().lat;
+    longitude = newMarker.getLatLng().lng;
+    document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
+    newMarker.on("dragend", function (event) {
       let marker = event.target;
       let position = marker.getLatLng();
       marker.setLatLng(new L.LatLng(position.lat, position.lng), {
@@ -281,8 +319,11 @@ document.addEventListener("DOMContentLoaded", () => {
       map.panTo(new L.LatLng(position.lat, position.lng));
       latitude = marker.getLatLng().lat;
       longitude = marker.getLatLng().lng;
+      document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
+      console.log(latitude, longitude);
     });
-    map.addLayer(marker);
+
+    map.addLayer(newMarker);
   }
 
   const cancelPost = document.getElementById("cancelPost");
@@ -290,6 +331,9 @@ document.addEventListener("DOMContentLoaded", () => {
   cancelPost.addEventListener("click", () => {
     document.getElementById("postForm").style.display = "none";
     map.removeLayer(newMarker);
+    newMarker = {};
+    creatingPost = false;
+    updateMapClickListener();
   });
 
   document.getElementById("postButton").addEventListener("click", async (e) => {
@@ -332,27 +376,28 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     document.getElementById("profileModal").style.display = "block";
 
-    async function fetchUserById(userId) {
-      const token = localStorage.getItem("token");
+		async function fetchUserById(userId) {
+			const token = localStorage.getItem("token");
+	
+			try {
+				const response = await fetch(`${baseUrl}/users/${userId}`, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+				});
+	
+				console.log(userId);
+	
+				const user = await response.json();
+				displayProfile(user);
+			} catch (error) {
+				console.error("Error fetching user:", error);
+			}
+		}
 
-      try {
-        const response = await fetch(`${baseUrl}/users/${userId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log(userId);
-
-        const user = await response.json();
-        displayProfile(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-      }
-    }
-    const userId = getQueryParam("id");
+    const userId = localStorage.getItem("userId");
     if (userId) {
       fetchUserById(userId);
     } else {
@@ -365,5 +410,26 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("profileEmail").value = user.email;
     document.getElementById("profileLocation").value = user.location;
     document.getElementById("profileRole").value = user.role;
+  }
+
+  // Handle post deletion
+
+  async function removePost(id) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${baseUrl}/posts/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // Check if the response has content before parsing JSON
+    if (response.status !== 204) {
+      let responseJson = await response.json();
+      console.log(responseJson);
+    } else {
+      alert("Post deleted successfully");
+    }
+    fetchPosts();
   }
 });

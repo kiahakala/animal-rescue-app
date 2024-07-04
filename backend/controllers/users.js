@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const usersRouter = require("express").Router();
 const User = require("../models/user");
+const { default: mongoose } = require("mongoose");
 
 usersRouter.get("/", async (req, res) => {
   // reference to document in another collection
