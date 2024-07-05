@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("createPost").style.display = "block";
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
-		const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userId");
     fetchPosts();
-		//fetchUserData(userId);
+    //fetchUserData(userId);
   }
 
   // Get users
@@ -40,25 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error fetching users:", error);
     }
   }
-
-  // Save user id as query parameter
-
-  // function createProfileLinks(users) {
-  //   const profileLink = document.getElementById("profile");
-
-  //   users.forEach((user) => {
-  //     profileLink.href = `?id=${user.id}`;
-  //     console.log(profileLink.href);
-  //   });
-  // }
-
-  // Get id as query parameter
-
-  // function getQueryParam(param) {
-  //   let params = new URL(document.location).searchParams;
-  //   let id = params.get(param);
-  //   return id;
-	// }
 
   // Get posts
   async function fetchPosts() {
@@ -154,6 +135,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Handle login
+
+  let userLoggedIn = false;
+
   document.getElementById("login").addEventListener("click", () => {
     if (document.getElementById("registerModal").style.display === "block") {
       document.getElementById("registerModal").style.display = "none";
@@ -180,11 +164,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const user = await response.json();
-			console.log(user.id);
+      console.log(user.id);
 
       if (user.token) {
+        userLoggedIn = true;
         localStorage.setItem("token", user.token);
-				localStorage.setItem("userId", user.id);
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("exp", user.decodedToken.exp);
+        console.log(user.decodedToken.exp);
         alert("Login successful!");
         document.getElementById("loginModal").style.display = "none";
         document.getElementById("login").style.display = "none";
@@ -193,19 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
         profile.style.display = "block";
         createPost.style.display = "block";
         registration.style.display = "none";
-
+				setupLoginInterval();
         fetchPosts();
-
-        setTimeout(() => {
-          localStorage.removeItem("token");
-					localStorage.removeItem("userId");
-          logout.style.display = "none";
-          profile.style.display = "none";
-          createPost.style.display = "none";
-          registration.style.display = "block";
-          document.getElementById("login").style.display = "block";
-          alert("Session expired, please login again!");
-        }, 1000 * 60 * 60); // 1 hour
       } else {
         alert("Login failed!");
       }
@@ -214,8 +190,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle registration
+  // Handle logout
+	let loginInterval;
 
+  // Function to check if the token is expired
+  function isTokenExpired() {
+    const expiration = localStorage.getItem("exp");
+    if (!expiration) return true;
+
+    const now = Date.now() / 1000; // Convert to seconds
+
+    return now > expiration;
+  }
+
+	function setupLoginInterval() {
+		// Define the interval and assign it to loginInterval
+		loginInterval = setInterval(loginTimer, 60000);
+	}
+
+	function loginTimer() {
+		console.log("Checking token expiration");
+		if (isTokenExpired() && userLoggedIn) {
+			logoutUser();
+			//window.location.reload();
+			clearInterval(loginInterval);
+		}
+	}
+
+  // Function to log the user out
+  function logoutUser() {
+    userLoggedIn = false;
+		clearInterval(loginInterval);
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("exp");
+    document.getElementById("logout").style.display = "none";
+    document.getElementById("profile").style.display = "none";
+    document.getElementById("createPost").style.display = "none";
+    document.getElementById("login").style.display = "block";
+    document.getElementById("register").style.display = "block";
+		if (document.getElementById("profileModal").style.display === "block") {
+			document.getElementById("profileModal").style.display = "none";
+		}
+    alert("Logged out!");
+  }
+
+	// setInterval(() => {
+	// 	console.log("Checking token expiration");
+	// 	if (isTokenExpired() && userLoggedIn) {
+	// 		logoutUser();
+	// 		clearInterval();
+	// 		window.location.reload();
+			
+	// 	}
+	// }, 10000);
+
+  document.getElementById("logout").addEventListener("click", () => {
+    logoutUser();
+  });
+
+	// Handle registration
   document.getElementById("register").addEventListener("click", (e) => {
     e.preventDefault();
     if (document.getElementById("loginModal").style.display === "block") {
@@ -261,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   // Close modals
-
   const closeButtons = document.querySelectorAll(".closeButton");
   closeButtons.forEach((closeButton) => {
     closeButton.addEventListener("click", () => {
@@ -269,19 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("registerModal").style.display = "none";
       document.getElementById("profileModal").style.display = "none";
     });
-  });
-
-  // Handle logout
-
-  document.getElementById("logout").addEventListener("click", () => {
-    localStorage.removeItem("token");
-		localStorage.removeItem("userId");
-    document.getElementById("logout").style.display = "none";
-    document.getElementById("profile").style.display = "none";
-    document.getElementById("createPost").style.display = "none";
-    document.getElementById("login").style.display = "block";
-    document.getElementById("register").style.display = "block";
-    alert("Logged out!");
   });
 
   // Handle create post
@@ -376,26 +396,26 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     document.getElementById("profileModal").style.display = "block";
 
-		async function fetchUserById(userId) {
-			const token = localStorage.getItem("token");
-	
-			try {
-				const response = await fetch(`${baseUrl}/users/${userId}`, {
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-				});
-	
-				console.log(userId);
-	
-				const user = await response.json();
-				displayProfile(user);
-			} catch (error) {
-				console.error("Error fetching user:", error);
-			}
-		}
+    async function fetchUserById(userId) {
+      const token = localStorage.getItem("token");
+
+      try {
+        const response = await fetch(`${baseUrl}/users/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(userId);
+
+        const user = await response.json();
+        displayProfile(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    }
 
     const userId = localStorage.getItem("userId");
     if (userId) {

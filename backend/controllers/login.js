@@ -24,10 +24,14 @@ loginRouter.post("/", async (req, res) => {
 	console.log(userForToken.id.toString())
 
   const token = jwt.sign(userForToken, process.env.SECRET, {
-    expiresIn: "1h",
+    expiresIn: '1h',
   });
 
-  res.status(200).send({ token, id: user._id.toString(), name: user.name, email: user.email });
+	const decodedToken = jwt.verify(token, process.env.SECRET);
+
+	console.log(decodedToken.exp.toLocaleString())
+
+  res.status(200).send({ token, decodedToken, id: user._id.toString(), name: user.name, email: user.email });
 });
 
 module.exports = loginRouter;

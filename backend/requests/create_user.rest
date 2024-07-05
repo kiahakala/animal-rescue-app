@@ -2,9 +2,9 @@ POST http://localhost:10000/users/
 Content-Type: application/json
 
 {
-    "name": "Tester",
-		"email": "testijee@test.fi",
-		"password": "test123",
+    "name": "Juu",
+		"email": "testijeep@test.fi",
+		"password": "joo",
 		"location": "Test Location",
 		"role": "user"
 }
