@@ -78,15 +78,25 @@ document.addEventListener("DOMContentLoaded", () => {
             <p>${post.description}</p>
 						<p>Posted: ${date.toLocaleString("fi-FI")}</p>`;
       let delSpan = document.createElement("span");
+      let editSpan = document.createElement("span");
       let delAttr = document.createAttribute("class");
+      let editAttr = document.createAttribute("class");
       delAttr.value = "delete";
+      editAttr.value = "edit";
       delSpan.setAttributeNode(delAttr);
+      editSpan.setAttributeNode(editAttr);
       let x = document.createTextNode("❌");
+      let e = document.createTextNode("✏️");
       delSpan.appendChild(x);
       delSpan.addEventListener("click", () => {
-        removePost(post.id);
+        confirmDelete(post.id);
+      });
+      editSpan.appendChild(e);
+      editSpan.addEventListener("click", () => {
+        handlePostUpdate(post.id);
       });
       userPostElement.appendChild(delSpan);
+			userPostElement.appendChild(editSpan);
 
       userPostsContainer.appendChild(userPostElement);
     });
@@ -102,9 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			`;
       postsContainer.appendChild(postElement);
 
-			console.log(post)
+      console.log(post);
 
-			if (post.postStatus === "resolved") {
+      if (post.postStatus === "resolved") {
         postElement.style.backgroundColor = "gray";
       } else if (post.postStatus === "open") {
         postElement.style.backgroundColor = "white";
@@ -319,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let latitude = 0;
   let longitude = 0;
   let newMarker = {};
-	const statusCheckBox = document.getElementById("status");
+  const statusCheckBox = document.getElementById("status");
   let postStatus = statusCheckBox.checked ? "open" : "resolved";
 
   document.getElementById("createPost").addEventListener("click", (e) => {
@@ -368,11 +378,11 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMapClickListener();
   });
 
-	statusCheckBox.addEventListener("change", () => {
-		postStatus = statusCheckBox.checked ? "open" : "resolved";
-	});
+  statusCheckBox.addEventListener("change", () => {
+    postStatus = statusCheckBox.checked ? "open" : "resolved";
+  });
 
-	console.log(postStatus);
+  console.log(postStatus);
 
   document.getElementById("postButton").addEventListener("click", async (e) => {
     e.preventDefault();
@@ -415,8 +425,18 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts();
   });
 
-	// Handle post deletion
+	// Confirm post deletion
+	function confirmDelete(id) {
+		let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
+		if (confirmDelete) {
+			removePost(id);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
+	// Handle post deletion
   async function removePost(id) {
     const token = localStorage.getItem("token");
     const response = await fetch(`${baseUrl}/posts/${id}`, {
@@ -436,27 +456,26 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts();
   }
 
-	// Handle post update
+  // Handle post update
 
-	async function updatePost(id) {
-		const token = localStorage.getItem("token");
-		const response = await fetch(`${baseUrl}/posts/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`,
-			},
-		});
-		// Check if the response has content before parsing JSON
-		if (response.status !== 204) {
-			let responseJson = await response.json();
-			console.log(responseJson);
-		} else {
-			alert("Post updated successfully");
-		}
-		fetchPosts();
-	}
-
+  async function updatePost(id) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${baseUrl}/posts/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // Check if the response has content before parsing JSON
+    if (response.status !== 204) {
+      let responseJson = await response.json();
+      console.log(responseJson);
+    } else {
+      alert("Post updated successfully");
+    }
+    fetchPosts();
+  }
 
   // Handle profile
 
@@ -499,5 +518,4 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("profileLocation").value = user.location;
     document.getElementById("profileRole").value = user.role;
   }
-
 });
