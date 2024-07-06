@@ -29,8 +29,6 @@ loginRouter.post("/", async (req, res) => {
 
 	const decodedToken = jwt.verify(token, process.env.SECRET);
 
-	console.log(decodedToken.exp.toLocaleString())
-
   res.status(200).send({ token, decodedToken, id: user._id.toString(), name: user.name, email: user.email });
 });
 

@@ -32,6 +32,7 @@
       <main>
         <div id="postForm" style="display: none">
           <h2>Luo ilmoitus</h2>
+					<p id="postInfo">Lisää sijainti klikkaamalla karttaa. Merkin paikkaa voi muuttaa raahaamalla sitä.</p>
           <input type="text" id="postTitle" placeholder="Otsikko" required />
           <textarea
             id="postDescription"
@@ -44,6 +45,8 @@
             placeholder="Sijainti"
             required
           />
+					<label for="status">Avoin</label>
+					<input type="checkbox" id="status" checked />
           <button id="postButton">Lähetä</button>
           <button id="cancelPost">Peruuta</button>
         </div>

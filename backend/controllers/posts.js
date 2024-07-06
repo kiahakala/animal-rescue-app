@@ -9,6 +9,7 @@ postsRouter.get("/", async (req, res) => {
     name: 1,
     email: 1,
 		timestamp: 1,
+		postStatus: 1,
   });
   res.json(posts.map((post) => post.toJSON()));
 });
@@ -45,6 +46,7 @@ postsRouter.post("/", async (req, res) => {
     latitude: body.latitude,
     longitude: body.longitude,
     timestamp: body.timestamp,
+		postStatus: body.postStatus,
   });
   if (!body.title) {
     res.status(400).end();
@@ -65,6 +67,7 @@ postsRouter.put("/:id", async (req, res) => {
     latitude: body.latitude,
     longitude: body.longitude,
     timestamp: body.timestamp,
+		postStatus: body.postStatus,
   };
   const updatedPost = await Post.findByIdAndUpdate(req.params.id, post, {
     new: true,

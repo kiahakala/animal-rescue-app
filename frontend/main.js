@@ -24,9 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("createPost").style.display = "block";
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
-    const userId = localStorage.getItem("userId");
     fetchPosts();
-    //fetchUserData(userId);
   }
 
   // Get users
@@ -35,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/users`);
       const users = await response.json();
       console.log(users);
-      //createProfileLinks(users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -105,26 +102,40 @@ document.addEventListener("DOMContentLoaded", () => {
 			`;
       postsContainer.appendChild(postElement);
 
-      let marker = L.marker([post.latitude, post.longitude]).addTo(map);
+			console.log(post)
 
-      let location = "";
+			if (post.postStatus === "resolved") {
+        postElement.style.backgroundColor = "gray";
+      } else if (post.postStatus === "open") {
+        postElement.style.backgroundColor = "white";
+      }
 
+      // Set up markers and popups for each post
+      async function setupMarker(post) {
+        let marker = L.marker([post.latitude, post.longitude]).addTo(map);
+
+        let markerLocation = await fetchReverse(post.latitude, post.longitude);
+
+        marker.bindPopup(`
+					<h3>${post.title}</h3>
+					<p>${post.description}</p>
+					<p>${markerLocation}</p>
+					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
+				`);
+      }
+
+      setupMarker(post);
+
+      // Handle reverse geocoding
       async function fetchReverse(latitude, longitude) {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2`
         );
         const data = await response.json();
-        console.log(data.display_name);
-        location = data.display_name;
-        return location;
+        console.log(data.name);
+        markerLocation = data.name;
+        return markerLocation;
       }
-
-      marker.bindPopup(`
-					<h3>${post.title}</h3>
-					<p>${post.description}</p>
-					<p>${location}</p>
-					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
-				`);
 
       bounds.push([post.latitude, post.longitude]);
     });
@@ -180,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
         profile.style.display = "block";
         createPost.style.display = "block";
         registration.style.display = "none";
-				setupLoginInterval();
+        setupLoginInterval();
         fetchPosts();
       } else {
         alert("Login failed!");
@@ -191,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Handle logout
-	let loginInterval;
+  let loginInterval;
 
   // Function to check if the token is expired
   function isTokenExpired() {
@@ -203,24 +214,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return now > expiration;
   }
 
-	function setupLoginInterval() {
-		// Define the interval and assign it to loginInterval
-		loginInterval = setInterval(loginTimer, 60000);
-	}
+  function setupLoginInterval() {
+    // Define the interval and assign it to loginInterval
+    loginInterval = setInterval(loginTimer, 60000);
+  }
 
-	function loginTimer() {
-		console.log("Checking token expiration");
-		if (isTokenExpired() && userLoggedIn) {
-			logoutUser();
-			//window.location.reload();
-			clearInterval(loginInterval);
-		}
-	}
+  function loginTimer() {
+    console.log("Checking token expiration");
+    if (isTokenExpired() && userLoggedIn) {
+      logoutUser();
+      //window.location.reload();
+      clearInterval(loginInterval);
+    }
+  }
 
   // Function to log the user out
   function logoutUser() {
     userLoggedIn = false;
-		clearInterval(loginInterval);
+    clearInterval(loginInterval);
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("exp");
@@ -229,27 +240,27 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("createPost").style.display = "none";
     document.getElementById("login").style.display = "block";
     document.getElementById("register").style.display = "block";
-		if (document.getElementById("profileModal").style.display === "block") {
-			document.getElementById("profileModal").style.display = "none";
-		}
+    if (document.getElementById("profileModal").style.display === "block") {
+      document.getElementById("profileModal").style.display = "none";
+    }
     alert("Logged out!");
   }
 
-	// setInterval(() => {
-	// 	console.log("Checking token expiration");
-	// 	if (isTokenExpired() && userLoggedIn) {
-	// 		logoutUser();
-	// 		clearInterval();
-	// 		window.location.reload();
-			
-	// 	}
-	// }, 10000);
+  // setInterval(() => {
+  // 	console.log("Checking token expiration");
+  // 	if (isTokenExpired() && userLoggedIn) {
+  // 		logoutUser();
+  // 		clearInterval();
+  // 		window.location.reload();
+
+  // 	}
+  // }, 10000);
 
   document.getElementById("logout").addEventListener("click", () => {
     logoutUser();
   });
 
-	// Handle registration
+  // Handle registration
   document.getElementById("register").addEventListener("click", (e) => {
     e.preventDefault();
     if (document.getElementById("loginModal").style.display === "block") {
@@ -305,10 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Handle create post
-
   let latitude = 0;
   let longitude = 0;
   let newMarker = {};
+	const statusCheckBox = document.getElementById("status");
+  let postStatus = statusCheckBox.checked ? "open" : "resolved";
 
   document.getElementById("createPost").addEventListener("click", (e) => {
     e.preventDefault();
@@ -356,6 +368,12 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMapClickListener();
   });
 
+	statusCheckBox.addEventListener("change", () => {
+		postStatus = statusCheckBox.checked ? "open" : "resolved";
+	});
+
+	console.log(postStatus);
+
   document.getElementById("postButton").addEventListener("click", async (e) => {
     e.preventDefault();
     const title = document.getElementById("postTitle").value;
@@ -370,7 +388,14 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(timestamp);
 
     try {
-      const data = { title, description, latitude, longitude, timestamp };
+      const data = {
+        title,
+        description,
+        latitude,
+        longitude,
+        timestamp,
+        postStatus,
+      };
       const response = await fetch(`${baseUrl}/posts`, {
         method: "POST",
         headers: {
@@ -389,6 +414,49 @@ document.addEventListener("DOMContentLoaded", () => {
     creatingPost = false;
     fetchPosts();
   });
+
+	// Handle post deletion
+
+  async function removePost(id) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${baseUrl}/posts/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // Check if the response has content before parsing JSON
+    if (response.status !== 204) {
+      let responseJson = await response.json();
+      console.log(responseJson);
+    } else {
+      alert("Post deleted successfully");
+    }
+    fetchPosts();
+  }
+
+	// Handle post update
+
+	async function updatePost(id) {
+		const token = localStorage.getItem("token");
+		const response = await fetch(`${baseUrl}/posts/${id}`, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		// Check if the response has content before parsing JSON
+		if (response.status !== 204) {
+			let responseJson = await response.json();
+			console.log(responseJson);
+		} else {
+			alert("Post updated successfully");
+		}
+		fetchPosts();
+	}
+
 
   // Handle profile
 
@@ -432,24 +500,4 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("profileRole").value = user.role;
   }
 
-  // Handle post deletion
-
-  async function removePost(id) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${baseUrl}/posts/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    // Check if the response has content before parsing JSON
-    if (response.status !== 204) {
-      let responseJson = await response.json();
-      console.log(responseJson);
-    } else {
-      alert("Post deleted successfully");
-    }
-    fetchPosts();
-  }
 });

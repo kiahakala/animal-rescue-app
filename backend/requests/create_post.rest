@@ -1,6 +1,6 @@
 POST http://localhost:10000/posts/
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVzdCIsImlkIjoiNjY4MjY4ZDU2MzUwZDVjNjkxNDk2ZDdmIiwiaWF0IjoxNzE5ODU4MDQyLCJleHAiOjE3MTk4NjE2NDJ9.kaEKpSyDGi1kcDnoOiwnJtamZ8_IMY40w-KR45CR_5g
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVzdGVyIiwiaWQiOiI2NjgzOThhZTM5OTY1NzI4NDJlNTEzNWEiLCJpYXQiOjE3MjAxOTgyMzYsImV4cCI6MTcyMDIwMTgzNn0.bs7thkL19CiE6OjvxULhNz_v4hhC8o62ZVKyBvj4T7k
 
 
 {
@@ -9,5 +9,6 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVGVzdCIsI
 		"userId": "66825db453c718475f6ef5ee",
 		"latitude": 60.492234,
 		"longitude": 20.506172,
-		"timestamp": "2021-12-12T12:12:12.000Z"
+		"timestamp": "2021-12-12T12:12:12.000Z",
+		"postStatus": "open"
 }

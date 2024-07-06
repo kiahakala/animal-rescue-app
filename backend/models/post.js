@@ -13,6 +13,10 @@ const postSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User'
 	},
+	postStatus: {
+		type: String,
+		required: true,
+	},
 	latitude: Number,
   longitude: Number,
 	timestamp: Date,
