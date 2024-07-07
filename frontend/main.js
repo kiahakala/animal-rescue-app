@@ -157,8 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
       async function setupMarker(post) {
         let marker = L.marker([post.latitude, post.longitude]).addTo(map);
 
-        //markerLocation = await fetchReverse(post.latitude, post.longitude);
-
         marker.bindPopup(`
 					<h3>${post.title}</h3>
 					<p>${post.description}</p>
