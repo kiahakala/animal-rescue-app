@@ -57,4 +57,31 @@ usersRouter.post("/", async (req, res) => {
   res.json(savedUser);
 });
 
+usersRouter.put("/:id", async (req, res) => {
+  const body = req.body;
+
+  if (!body.name || !body.password) {
+    return res.status(400).json({ error: "Nimi ja salasana vaaditaan!" });
+  }
+  if (body.name.length < 3 || body.password.length < 3) {
+    return res.status(400).json({
+      error: "Nimen ja salasanan on oltava vähintään 3 merkkiä pitkä!",
+    });
+  }
+
+  const saltRounds = 10;
+  const passwordHash = await bcrypt.hash(body.password, saltRounds);
+  const user = {
+		name: body.name,
+    email: body.email,
+    passwordHash,
+    location: body.location,
+		role: body.role,
+  };
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, user, {
+    new: true,
+  });
+  res.json(updatedUser);
+});
+
 module.exports = usersRouter;

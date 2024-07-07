@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let editingPost = false;
   let markerLocation;
 
+  // Initialize the map
   const map = L.map("map").setView([51.505, -0.09], 13);
 
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchUsers();
 
+  // Check authentication for the right UI view
   if (localStorage.getItem("token")) {
     console.log("Token found in local storage");
     document.getElementById("logout").style.display = "block";
@@ -62,6 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error fetching posts:", error);
     }
   }
+
+  // ------------------------- POST SPECIFIC FUNCTIONS -------------------------
 
   // Show posts
   function displayPosts(posts) {
@@ -174,8 +178,221 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Handle login
+  // Handle create post
+  let latitude = 0;
+  let longitude = 0;
+  let newMarker = {};
+  const statusCheckBox = document.getElementById("status");
+  let postStatus = statusCheckBox.checked ? "open" : "resolved";
 
+  document.getElementById("createPost").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("postForm").style.display = "block";
+    creatingPost = true;
+    updateMapClickListener();
+  });
+
+  function updateMapClickListener() {
+    if (creatingPost || editingPost) {
+      map.on("click", onMapClick); // Attach the event listener if creatingPost is true
+    } else {
+      map.off("click", onMapClick); // Remove the event listener if creatingPost is false
+    }
+  }
+
+  function onMapClick(e) {
+    newMarker = new L.marker(e.latlng, { draggable: "true" });
+    latitude = newMarker.getLatLng().lat;
+    longitude = newMarker.getLatLng().lng;
+    document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
+    newMarker.on("dragend", function (event) {
+      let marker = event.target;
+      let position = marker.getLatLng();
+      marker.setLatLng(new L.LatLng(position.lat, position.lng), {
+        draggable: "true",
+      });
+      map.panTo(new L.LatLng(position.lat, position.lng));
+      latitude = marker.getLatLng().lat;
+      longitude = marker.getLatLng().lng;
+      document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
+    });
+
+    map.addLayer(newMarker);
+  }
+
+  // Cancel post creation
+  const cancelPost = document.getElementById("cancelPost");
+
+  cancelPost.addEventListener("click", () => {
+    document.getElementById("postForm").style.display = "none";
+    map.removeLayer(newMarker);
+    newMarker = {};
+    creatingPost = false;
+    updateMapClickListener();
+  });
+
+  statusCheckBox.addEventListener("change", () => {
+    postStatus = statusCheckBox.checked ? "open" : "resolved";
+  });
+
+  const postButton = document.getElementById("postButton");
+
+  postButton.addEventListener("click", onPostButtonClick);
+
+  function onPostButtonClick(e) {
+    e.preventDefault();
+    createPost();
+  }
+
+  async function createPost() {
+    const title = document.getElementById("postTitle").value;
+    const description = document.getElementById("postDescription").value;
+    const timestamp = new Date().toISOString();
+    const token = localStorage.getItem("token");
+
+    latitude = latitude.toString();
+    longitude = longitude.toString();
+
+    console.log(latitude, longitude);
+    console.log(timestamp);
+
+    try {
+      const data = {
+        title,
+        description,
+        latitude,
+        longitude,
+        timestamp,
+        postStatus,
+      };
+      const response = await fetch(`${baseUrl}/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const newPost = await response.json();
+      document.getElementById("postForm").style.display = "none";
+      console.log(newPost);
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+    creatingPost = false;
+    fetchPosts();
+  }
+
+  // Confirm post deletion
+  function confirmDelete(id) {
+    let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
+    if (confirmDelete) {
+      removePost(id);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Handle post deletion
+  async function removePost(id) {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${baseUrl}/posts/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    // Check if the response has content before parsing JSON
+    if (response.status !== 204) {
+      let responseJson = await response.json();
+      console.log(responseJson);
+    } else {
+      alert("Post deleted successfully");
+    }
+    fetchPosts();
+  }
+
+  // Handle post update
+  function handlePostUpdate(id) {
+    editingPost = true;
+
+    document.getElementById("postForm").style.display = "block";
+
+    const post = document.getElementById(id);
+
+    let title = post.childNodes[1].textContent;
+    let description = post.childNodes[3].textContent;
+    let postLocation = post.childNodes[6].textContent;
+    let lat = post.childNodes[8].textContent;
+    let lon = post.childNodes[9].textContent;
+    let postStatus = document.getElementById("status");
+
+    console.log(postLocation);
+
+    document.getElementById("postTitle").value = title;
+    document.getElementById("postDescription").value = description;
+    document.getElementById("postCoords").value = `${lat}, ${lon}`;
+
+    updateMapClickListener();
+
+    const postButton = document.getElementById("postButton");
+
+    postButton.removeEventListener("click", onPostButtonClick);
+
+    postButton.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      title = document.getElementById("postTitle").value;
+      description = document.getElementById("postDescription").value;
+      latitude = document.getElementById("postCoords").value.split(",")[0];
+      longitude = document.getElementById("postCoords").value.split(",")[1];
+
+      postLocation = postLocation.split(": ")[1];
+
+      postStatus = statusCheckBox.checked ? "open" : "resolved";
+
+      const timestamp = new Date().toISOString();
+      const token = localStorage.getItem("token");
+      const user = localStorage.getItem("userId");
+
+      try {
+        const updatedData = {
+          title,
+          description,
+          user,
+          latitude,
+          longitude,
+          timestamp,
+          postStatus,
+        };
+
+        const response = await fetch(`${baseUrl}/posts/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatedData),
+        });
+
+        const updatedPost = await response.json();
+
+        document.getElementById("postForm").style.display = "none";
+        console.log(updatedPost);
+      } catch (error) {
+        console.error("Error updating post:", error);
+      }
+      editingPost = false;
+      fetchPosts();
+    });
+  }
+
+  // ------------------------- USER SPECIFIC FUNCTIONS -------------------------
+
+  // Handle login
   let userLoggedIn = false;
 
   document.getElementById("login").addEventListener("click", () => {
@@ -324,233 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  // Close modals
-  const closeButtons = document.querySelectorAll(".closeButton");
-  closeButtons.forEach((closeButton) => {
-    closeButton.addEventListener("click", () => {
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("registerModal").style.display = "none";
-      document.getElementById("profileModal").style.display = "none";
-    });
-  });
-
-  // Handle create post
-  let latitude = 0;
-  let longitude = 0;
-  let newMarker = {};
-  const statusCheckBox = document.getElementById("status");
-  let postStatus = statusCheckBox.checked ? "open" : "resolved";
-
-  document.getElementById("createPost").addEventListener("click", (e) => {
-    e.preventDefault();
-    document.getElementById("postForm").style.display = "block";
-    creatingPost = true;
-    updateMapClickListener();
-  });
-
-  function updateMapClickListener() {
-    if (creatingPost || editingPost) {
-      map.on("click", onMapClick); // Attach the event listener if creatingPost is true
-    } else {
-      map.off("click", onMapClick); // Remove the event listener if creatingPost is false
-    }
-  }
-
-  function onMapClick(e) {
-    newMarker = new L.marker(e.latlng, { draggable: "true" });
-    latitude = newMarker.getLatLng().lat;
-    longitude = newMarker.getLatLng().lng;
-    document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
-    newMarker.on("dragend", function (event) {
-      let marker = event.target;
-      let position = marker.getLatLng();
-      marker.setLatLng(new L.LatLng(position.lat, position.lng), {
-        draggable: "true",
-      });
-      map.panTo(new L.LatLng(position.lat, position.lng));
-      latitude = marker.getLatLng().lat;
-      longitude = marker.getLatLng().lng;
-      document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
-    });
-
-    map.addLayer(newMarker);
-  }
-
-  const cancelPost = document.getElementById("cancelPost");
-
-  cancelPost.addEventListener("click", () => {
-    document.getElementById("postForm").style.display = "none";
-    map.removeLayer(newMarker);
-    newMarker = {};
-    creatingPost = false;
-    updateMapClickListener();
-  });
-
-  statusCheckBox.addEventListener("change", () => {
-    postStatus = statusCheckBox.checked ? "open" : "resolved";
-  });
-
-  console.log(postStatus);
-
-	const postButton = document.getElementById("postButton");
-
-	postButton.addEventListener("click", onPostButtonClick);
-
-	function onPostButtonClick(e) {
-		e.preventDefault();
-		createPost();
-	}
-
-	async function createPost() {
-    const title = document.getElementById("postTitle").value;
-    const description = document.getElementById("postDescription").value;
-    const timestamp = new Date().toISOString();
-    const token = localStorage.getItem("token");
-
-    latitude = latitude.toString();
-    longitude = longitude.toString();
-
-    console.log(latitude, longitude);
-    console.log(timestamp);
-
-    try {
-      const data = {
-        title,
-        description,
-        latitude,
-        longitude,
-        timestamp,
-        postStatus,
-      };
-      const response = await fetch(`${baseUrl}/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      const newPost = await response.json();
-      document.getElementById("postForm").style.display = "none";
-      console.log(newPost);
-    } catch (error) {
-      console.error("Error creating post:", error);
-    }
-    creatingPost = false;
-    fetchPosts();
-  }
-
-  // Confirm post deletion
-  function confirmDelete(id) {
-    let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
-    if (confirmDelete) {
-      removePost(id);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  // Handle post deletion
-  async function removePost(id) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${baseUrl}/posts/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    // Check if the response has content before parsing JSON
-    if (response.status !== 204) {
-      let responseJson = await response.json();
-      console.log(responseJson);
-    } else {
-      alert("Post deleted successfully");
-    }
-    fetchPosts();
-  }
-
-  // Handle post update
-
-  function handlePostUpdate(id) {
-    editingPost = true;
-
-    document.getElementById("postForm").style.display = "block";
-
-    const post = document.getElementById(id);
-
-    let title = post.childNodes[1].textContent;
-    let description = post.childNodes[3].textContent;
-		let postLocation = post.childNodes[6].textContent;
-    let lat = post.childNodes[8].textContent;
-    let lon = post.childNodes[9].textContent;
-    let postStatus = document.getElementById("status");
-
-		console.log(postLocation);
-
-    document.getElementById("postTitle").value = title;
-    document.getElementById("postDescription").value = description;
-    document.getElementById("postCoords").value = `${lat}, ${lon}`;
-
-    updateMapClickListener();
-
-		const postButton = document.getElementById("postButton")
-
-		postButton.removeEventListener("click", onPostButtonClick);
-
-		postButton.addEventListener("click", async (e) => {
-			e.preventDefault();
-
-			title = document.getElementById("postTitle").value;
-			description = document.getElementById("postDescription").value;
-			latitude = document.getElementById("postCoords").value.split(",")[0];
-			longitude = document.getElementById("postCoords").value.split(",")[1];
-
-			postLocation = postLocation.split(": ")[1];
-
-			postStatus = statusCheckBox.checked ? "open" : "resolved";
-
-			const timestamp = new Date().toISOString();
-			const token = localStorage.getItem("token");
-			const user = localStorage.getItem("userId");
-	
-			try {
-				const updatedData = {
-					title,
-					description,
-					user,
-					latitude,
-					longitude,
-					timestamp,
-					postStatus,
-				};
-	
-				const response = await fetch(`${baseUrl}/posts/${id}`, {
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify(updatedData),
-				});
-	
-				const updatedPost = await response.json();
-	
-				document.getElementById("postForm").style.display = "none";
-				console.log(updatedPost);
-			} catch (error) {
-				console.error("Error updating post:", error);
-			}
-			editingPost = false;
-			fetchPosts();
-		}
-		);
-  };
-
   // Handle profile
-
   document.getElementById("profile").addEventListener("click", async (e) => {
     e.preventDefault();
     document.getElementById("profileModal").style.display = "block";
@@ -585,9 +576,67 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function displayProfile(user) {
-    document.getElementById("profileName").value = user.name;
-    document.getElementById("profileEmail").value = user.email;
-    document.getElementById("profileLocation").value = user.location;
-    document.getElementById("profileRole").value = user.role;
+    let profileName = document.getElementById("profileName");
+    let profileEmail = document.getElementById("profileEmail");
+		let profilePassword = document.getElementById("profilePassword");
+    let profileLocation = document.getElementById("profileLocation");
+    let profileRole = document.getElementById("profileRole");
+
+    profileName.value = user.name;
+    profileEmail.value = user.email;
+		profilePassword.value = "";
+    profileLocation.value = user.location;
+    profileRole.value = user.role;
+
+    // Update user profile
+    const profileButton = document.getElementById("profileButton");
+
+    profileButton.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+
+      const name = document.getElementById("profileName").value;
+      const email = document.getElementById("profileEmail").value;
+			const password = document.getElementById("profilePassword").value;
+      const location = document.getElementById("profileLocation").value;
+      const role = document.getElementById("profileRole").value;
+
+      try {
+        const response = await fetch(`${baseUrl}/users/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            email,
+						password,
+            location,
+            role,
+          }),
+        });
+
+        const updatedUser = await response.json();
+
+				if (updatedUser.error) {
+					alert(updatedUser.error);
+				}
+        console.log(updatedUser);
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
+    });
   }
+
+  // Close modals
+  const closeButtons = document.querySelectorAll(".closeButton");
+  closeButtons.forEach((closeButton) => {
+    closeButton.addEventListener("click", () => {
+      document.getElementById("loginModal").style.display = "none";
+      document.getElementById("registerModal").style.display = "none";
+      document.getElementById("profileModal").style.display = "none";
+    });
+  });
 });
