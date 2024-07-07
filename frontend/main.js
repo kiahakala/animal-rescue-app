@@ -2,6 +2,9 @@ const baseUrl = "http://localhost:10000";
 
 document.addEventListener("DOMContentLoaded", () => {
   let creatingPost = false;
+  let editingPost = false;
+  let markerLocation;
+
   const map = L.map("map").setView([51.505, -0.09], 13);
 
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -27,6 +30,16 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts();
   }
 
+  // Handle reverse geocoding
+  async function fetchReverse(latitude, longitude) {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2`
+    );
+    const data = await response.json();
+    markerLocation = data.name;
+    return markerLocation;
+  }
+
   // Get users
   async function fetchUsers() {
     try {
@@ -44,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${baseUrl}/posts`);
       const posts = await response.json();
       displayPosts(posts);
-      console.log(posts.map((post) => post.user));
+      // console.log(posts.map((post) => post.user));
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
@@ -66,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Filter posts to include only those that belong to the user with the specified ID
     const userPosts = posts.filter((post) => post.user.id === id);
 
-    userPosts.forEach((post) => {
+    userPosts.forEach(async (post) => {
       const date = new Date(post.timestamp);
       const userPostElement = document.createElement("div");
       let postAttr = document.createAttribute("id");
@@ -74,9 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
       userPostElement.setAttributeNode(postAttr);
       userPostElement.classList.add("post");
       userPostElement.innerHTML = `
-            <h3>${post.title}</h3>
-            <p>${post.description}</p>
-						<p>Posted: ${date.toLocaleString("fi-FI")}</p>`;
+            <h3 id="userPostTitle">${post.title}</h3>
+            <p id="userPostDesc">${post.description}</p>
+						<p id="userPostDate">Posted: ${date.toLocaleString("fi-FI")}</p>`;
       let delSpan = document.createElement("span");
       let editSpan = document.createElement("span");
       let delAttr = document.createAttribute("class");
@@ -93,10 +106,30 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       editSpan.appendChild(e);
       editSpan.addEventListener("click", () => {
+        console.log(post.id);
         handlePostUpdate(post.id);
       });
+
+      // Add coordinates to the user post element
+      let locationElement = document.createElement("p");
+
+      let coordinates = document.createElement("p");
+      let lat = document.createElement("p");
+      let lon = document.createElement("p");
+      let postLocation = await fetchReverse(post.latitude, post.longitude);
+      locationElement.innerHTML = `Sijainti: ${postLocation}`;
+      coordinates.innerHTML = "Koordinaatit: ";
+      lat.innerHTML = `${post.latitude}`;
+      lon.innerHTML = `${post.longitude}`;
+
+      const dataArray = [locationElement, coordinates, lat, lon];
+      for (let i = 0; i < dataArray.length; i++) {
+        userPostElement.appendChild(dataArray[i]);
+      }
+
+      // Add controls to the user post element
       userPostElement.appendChild(delSpan);
-			userPostElement.appendChild(editSpan);
+      userPostElement.appendChild(editSpan);
 
       userPostsContainer.appendChild(userPostElement);
     });
@@ -106,13 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const postElement = document.createElement("div");
       postElement.classList.add("post");
       postElement.innerHTML = `
-				<h3>${post.title}</h3>
-				<p>${post.description}</p>
-				<p>Julkaistu: ${date.toLocaleString("fi-FI")}</p>
+				<h3 id="postedTitle">${post.title}</h3>
+        <p id="postedDesc">${post.description}</p>
+				<p id="postedDate">Posted: ${date.toLocaleString("fi-FI")}</p>
 			`;
       postsContainer.appendChild(postElement);
 
-      console.log(post);
+      // console.log(post);
 
       if (post.postStatus === "resolved") {
         postElement.style.backgroundColor = "gray";
@@ -124,28 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
       async function setupMarker(post) {
         let marker = L.marker([post.latitude, post.longitude]).addTo(map);
 
-        let markerLocation = await fetchReverse(post.latitude, post.longitude);
+        //markerLocation = await fetchReverse(post.latitude, post.longitude);
 
         marker.bindPopup(`
 					<h3>${post.title}</h3>
 					<p>${post.description}</p>
-					<p>${markerLocation}</p>
 					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
 				`);
       }
 
       setupMarker(post);
-
-      // Handle reverse geocoding
-      async function fetchReverse(latitude, longitude) {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2`
-        );
-        const data = await response.json();
-        console.log(data.name);
-        markerLocation = data.name;
-        return markerLocation;
-      }
 
       bounds.push([post.latitude, post.longitude]);
     });
@@ -256,16 +277,6 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Logged out!");
   }
 
-  // setInterval(() => {
-  // 	console.log("Checking token expiration");
-  // 	if (isTokenExpired() && userLoggedIn) {
-  // 		logoutUser();
-  // 		clearInterval();
-  // 		window.location.reload();
-
-  // 	}
-  // }, 10000);
-
   document.getElementById("logout").addEventListener("click", () => {
     logoutUser();
   });
@@ -340,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateMapClickListener() {
-    if (creatingPost) {
+    if (creatingPost || editingPost) {
       map.on("click", onMapClick); // Attach the event listener if creatingPost is true
     } else {
       map.off("click", onMapClick); // Remove the event listener if creatingPost is false
@@ -362,7 +373,6 @@ document.addEventListener("DOMContentLoaded", () => {
       latitude = marker.getLatLng().lat;
       longitude = marker.getLatLng().lng;
       document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
-      console.log(latitude, longitude);
     });
 
     map.addLayer(newMarker);
@@ -384,8 +394,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log(postStatus);
 
-  document.getElementById("postButton").addEventListener("click", async (e) => {
-    e.preventDefault();
+	const postButton = document.getElementById("postButton");
+
+	postButton.addEventListener("click", onPostButtonClick);
+
+	function onPostButtonClick(e) {
+		e.preventDefault();
+		createPost();
+	}
+
+	async function createPost() {
     const title = document.getElementById("postTitle").value;
     const description = document.getElementById("postDescription").value;
     const timestamp = new Date().toISOString();
@@ -423,20 +441,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     creatingPost = false;
     fetchPosts();
-  });
+  }
 
-	// Confirm post deletion
-	function confirmDelete(id) {
-		let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
-		if (confirmDelete) {
-			removePost(id);
-			return true;
-		} else {
-			return false;
-		}
-	}
+  // Confirm post deletion
+  function confirmDelete(id) {
+    let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
+    if (confirmDelete) {
+      removePost(id);
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-	// Handle post deletion
+  // Handle post deletion
   async function removePost(id) {
     const token = localStorage.getItem("token");
     const response = await fetch(`${baseUrl}/posts/${id}`, {
@@ -458,24 +476,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle post update
 
-  async function updatePost(id) {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${baseUrl}/posts/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    // Check if the response has content before parsing JSON
-    if (response.status !== 204) {
-      let responseJson = await response.json();
-      console.log(responseJson);
-    } else {
-      alert("Post updated successfully");
-    }
-    fetchPosts();
-  }
+  function handlePostUpdate(id) {
+    editingPost = true;
+
+    document.getElementById("postForm").style.display = "block";
+
+    const post = document.getElementById(id);
+
+    let title = post.childNodes[1].textContent;
+    let description = post.childNodes[3].textContent;
+		let postLocation = post.childNodes[6].textContent;
+    let lat = post.childNodes[8].textContent;
+    let lon = post.childNodes[9].textContent;
+    let postStatus = document.getElementById("status");
+
+		console.log(postLocation);
+
+    document.getElementById("postTitle").value = title;
+    document.getElementById("postDescription").value = description;
+    document.getElementById("postCoords").value = `${lat}, ${lon}`;
+
+    updateMapClickListener();
+
+		const postButton = document.getElementById("postButton")
+
+		postButton.removeEventListener("click", onPostButtonClick);
+
+		postButton.addEventListener("click", async (e) => {
+			e.preventDefault();
+
+			title = document.getElementById("postTitle").value;
+			description = document.getElementById("postDescription").value;
+			latitude = document.getElementById("postCoords").value.split(",")[0];
+			longitude = document.getElementById("postCoords").value.split(",")[1];
+
+			postLocation = postLocation.split(": ")[1];
+
+			postStatus = statusCheckBox.checked ? "open" : "resolved";
+
+			const timestamp = new Date().toISOString();
+			const token = localStorage.getItem("token");
+			const user = localStorage.getItem("userId");
+	
+			try {
+				const updatedData = {
+					title,
+					description,
+					user,
+					latitude,
+					longitude,
+					timestamp,
+					postStatus,
+				};
+	
+				const response = await fetch(`${baseUrl}/posts/${id}`, {
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify(updatedData),
+				});
+	
+				const updatedPost = await response.json();
+	
+				document.getElementById("postForm").style.display = "none";
+				console.log(updatedPost);
+			} catch (error) {
+				console.error("Error updating post:", error);
+			}
+			editingPost = false;
+			fetchPosts();
+		}
+		);
+  };
 
   // Handle profile
 
