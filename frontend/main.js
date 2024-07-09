@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`${baseUrl}/users`);
       const users = await response.json();
-      console.log(users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -159,7 +158,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Set up markers and popups for each post
       async function setupMarker(post) {
-        let marker = L.marker([post.latitude, post.longitude]).addTo(map);
+        // Handle marker icon based on user role
+        const icon = L.icon({
+          iconUrl:
+            post.user.role === "helper"
+              ? "assets/pin-helper.png"
+              : "assets/pin-animal.png",
+          iconSize: [48, 48],
+          iconAnchor: [24, 36],
+          popupAnchor: [0, -60],
+        });
+
+        let marker = L.marker([post.latitude, post.longitude], {
+          icon: icon,
+        }).addTo(map);
 
         marker.bindPopup(`
 					<h3>${post.title}</h3>
@@ -201,7 +213,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function onMapClick(e) {
-    newMarker = new L.marker(e.latlng, { draggable: "true" });
+		const userRole = localStorage.getItem("role");
+		const icon = L.icon({
+			iconUrl: userRole === "helper" ? "assets/pin-helper.png" : "assets/pin-animal.png",
+			iconSize: [48, 48],
+			iconAnchor: [24, 36],
+			popupAnchor: [0, -60],
+		});
+		
+    newMarker = new L.marker(e.latlng, { icon: icon, draggable: "true" });
     latitude = newMarker.getLatLng().lat;
     longitude = newMarker.getLatLng().lng;
     document.getElementById("postCoords").value = `${latitude}, ${longitude}`;
@@ -209,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let marker = event.target;
       let position = marker.getLatLng();
       marker.setLatLng(new L.LatLng(position.lat, position.lng), {
+				icon: icon,
         draggable: "true",
       });
       map.panTo(new L.LatLng(position.lat, position.lng));
@@ -421,13 +442,14 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const user = await response.json();
-      console.log(user.id);
+      console.log(user.role);
 
       if (user.token) {
         userLoggedIn = true;
         localStorage.setItem("token", user.token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("exp", user.decodedToken.exp);
+				localStorage.setItem("role", user.role);
         console.log(user.decodedToken.exp);
         alert("Login successful!");
         document.getElementById("loginModal").style.display = "none";
@@ -478,9 +500,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function logoutUser() {
     userLoggedIn = false;
     clearInterval(loginInterval);
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("exp");
+		const storageItems = ["token", "userId", "exp", "role"];
+		storageItems.forEach((item) => {
+			localStorage.removeItem(item);
+		});
     document.getElementById("logout").style.display = "none";
     document.getElementById("profile").style.display = "none";
     document.getElementById("createPost").style.display = "none";
@@ -578,13 +601,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function displayProfile(user) {
     let profileName = document.getElementById("profileName");
     let profileEmail = document.getElementById("profileEmail");
-		let profilePassword = document.getElementById("profilePassword");
+    let profilePassword = document.getElementById("profilePassword");
     let profileLocation = document.getElementById("profileLocation");
     let profileRole = document.getElementById("profileRole");
 
     profileName.value = user.name;
     profileEmail.value = user.email;
-		profilePassword.value = "";
+    profilePassword.value = "";
     profileLocation.value = user.location;
     profileRole.value = user.role;
 
@@ -595,10 +618,11 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
+			const savedRole = localStorage.getItem("role");
 
       const name = document.getElementById("profileName").value;
       const email = document.getElementById("profileEmail").value;
-			const password = document.getElementById("profilePassword").value;
+      const password = document.getElementById("profilePassword").value;
       const location = document.getElementById("profileLocation").value;
       const role = document.getElementById("profileRole").value;
 
@@ -612,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({
             name,
             email,
-						password,
+            password,
             location,
             role,
           }),
@@ -620,8 +644,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const updatedUser = await response.json();
 
-				if (updatedUser.error) {
-					alert(updatedUser.error);
+        if (updatedUser.error) {
+          alert(updatedUser.error);
+        }
+
+				if (updatedUser.role !== savedRole) {
+					localStorage.removeItem("role");
+					localStorage.setItem("role", updatedUser.role);
 				}
         console.log(updatedUser);
       } catch (error) {

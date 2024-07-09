@@ -10,6 +10,7 @@ postsRouter.get("/", async (req, res) => {
     email: 1,
 		timestamp: 1,
 		postStatus: 1,
+		role: 1
   });
   res.json(posts.map((post) => post.toJSON()));
 });
