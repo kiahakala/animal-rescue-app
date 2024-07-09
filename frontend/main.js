@@ -68,16 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Show posts
   function displayPosts(posts) {
-    const postsContainer = document.getElementById("posts");
-    postsContainer.innerHTML = "";
-
-    const userPostsContainer = document.getElementById("userPosts");
-    userPostsContainer.innerHTML = "";
+    ["posts", "userPosts"].forEach(
+      (containerId) => (document.getElementById(containerId).innerHTML = "")
+    );
 
     const bounds = [];
-
     const id = localStorage.getItem("userId");
-    console.log(id);
 
     // Filter posts to include only those that belong to the user with the specified ID
     const userPosts = posts.filter((post) => post.user.id === id);
@@ -92,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
       userPostElement.innerHTML = `
             <h3 id="userPostTitle">${post.title}</h3>
             <p id="userPostDesc">${post.description}</p>
-						<p id="userPostDate">Posted: ${date.toLocaleString("fi-FI")}</p>`;
+						<p id="userPostDate">Julkaistu: ${date.toLocaleString("fi-FI")}</p>`;
       let delSpan = document.createElement("span");
       let editSpan = document.createElement("span");
       let delAttr = document.createAttribute("class");
@@ -134,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
       userPostElement.appendChild(delSpan);
       userPostElement.appendChild(editSpan);
 
-      userPostsContainer.appendChild(userPostElement);
+      document.getElementById("userPosts").appendChild(userPostElement);
     });
 
     posts.forEach((post) => {
@@ -146,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <p id="postedDesc">${post.description}</p>
 				<p id="postedDate">Posted: ${date.toLocaleString("fi-FI")}</p>
 			`;
-      postsContainer.appendChild(postElement);
+      document.getElementById("posts").appendChild(postElement);
 
       // console.log(post);
 
@@ -205,22 +201,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateMapClickListener() {
-    if (creatingPost || editingPost) {
-      map.on("click", onMapClick); // Attach the event listener if creatingPost is true
-    } else {
-      map.off("click", onMapClick); // Remove the event listener if creatingPost is false
-    }
+    creatingPost || editingPost
+      ? map.on("click", onMapClick)
+      : map.off("click", onMapClick);
   }
 
   function onMapClick(e) {
-		const userRole = localStorage.getItem("role");
-		const icon = L.icon({
-			iconUrl: userRole === "helper" ? "assets/pin-helper.png" : "assets/pin-animal.png",
-			iconSize: [48, 48],
-			iconAnchor: [24, 36],
-			popupAnchor: [0, -60],
-		});
-		
+    const userRole = localStorage.getItem("role");
+    const iconUrl =
+      userRole === "helper" ? "assets/pin-helper.png" : "assets/pin-animal.png";
+    const icon = L.icon({
+      iconUrl,
+      iconSize: [48, 48],
+      iconAnchor: [24, 36],
+      popupAnchor: [0, -60],
+    });
+
     newMarker = new L.marker(e.latlng, { icon: icon, draggable: "true" });
     latitude = newMarker.getLatLng().lat;
     longitude = newMarker.getLatLng().lng;
@@ -229,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let marker = event.target;
       let position = marker.getLatLng();
       marker.setLatLng(new L.LatLng(position.lat, position.lng), {
-				icon: icon,
+        icon: icon,
         draggable: "true",
       });
       map.panTo(new L.LatLng(position.lat, position.lng));
@@ -271,18 +267,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const timestamp = new Date().toISOString();
     const token = localStorage.getItem("token");
 
-    latitude = latitude.toString();
-    longitude = longitude.toString();
-
-    console.log(latitude, longitude);
-    console.log(timestamp);
-
     try {
       const data = {
         title,
         description,
-        latitude,
-        longitude,
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
         timestamp,
         postStatus,
       };
@@ -297,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const newPost = await response.json();
       document.getElementById("postForm").style.display = "none";
-      console.log(newPost);
+      // console.log(newPost);
     } catch (error) {
       console.error("Error creating post:", error);
     }
@@ -308,12 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Confirm post deletion
   function confirmDelete(id) {
     let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
-    if (confirmDelete) {
-      removePost(id);
-      return true;
-    } else {
-      return false;
-    }
+		confirmDelete && removePost(id);
   }
 
   // Handle post deletion
@@ -350,8 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let lat = post.childNodes[8].textContent;
     let lon = post.childNodes[9].textContent;
     let postStatus = document.getElementById("status");
-
-    console.log(postLocation);
 
     document.getElementById("postTitle").value = title;
     document.getElementById("postDescription").value = description;
@@ -402,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const updatedPost = await response.json();
 
         document.getElementById("postForm").style.display = "none";
-        console.log(updatedPost);
+        // console.log(updatedPost);
       } catch (error) {
         console.error("Error updating post:", error);
       }
@@ -429,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const logout = document.getElementById("logout");
     const profile = document.getElementById("profile");
     const createPost = document.getElementById("createPost");
-    const registration = document.getElementById("register");
+    const posts = document.getElementById("posts");
 
     try {
       const data = { name, password };
@@ -442,23 +425,23 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const user = await response.json();
-      console.log(user.role);
 
       if (user.token) {
         userLoggedIn = true;
         localStorage.setItem("token", user.token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("exp", user.decodedToken.exp);
-				localStorage.setItem("role", user.role);
-        console.log(user.decodedToken.exp);
+        localStorage.setItem("role", user.role);
         alert("Login successful!");
-        document.getElementById("loginModal").style.display = "none";
-        document.getElementById("login").style.display = "none";
 
-        logout.style.display = "block";
-        profile.style.display = "block";
-        createPost.style.display = "block";
-        registration.style.display = "none";
+				["loginModal", "login", "register"].forEach((el) => {
+					document.getElementById(el).style.display = "none";
+				});
+
+        [logout, profile, createPost, posts].forEach((el) => {
+          el.style.display = "block";
+        });
+
         setupLoginInterval();
         fetchPosts();
       } else {
@@ -500,13 +483,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function logoutUser() {
     userLoggedIn = false;
     clearInterval(loginInterval);
-		const storageItems = ["token", "userId", "exp", "role"];
-		storageItems.forEach((item) => {
-			localStorage.removeItem(item);
+    ["token", "userId", "exp", "role"].forEach((item) => {
+      localStorage.removeItem(item);
+    });
+		["logout", "profile", "createPost", "posts"].forEach((el) => {
+			document.getElementById(el).style.display = "none";
 		});
-    document.getElementById("logout").style.display = "none";
-    document.getElementById("profile").style.display = "none";
-    document.getElementById("createPost").style.display = "none";
     document.getElementById("login").style.display = "block";
     document.getElementById("register").style.display = "block";
     if (document.getElementById("profileModal").style.display === "block") {
@@ -536,8 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("registerPassword").value;
       const location = document.getElementById("registerLocation").value;
       const role = document.getElementById("registerRole");
-
-      console.log(role.value);
 
       try {
         const response = await fetch(`${baseUrl}/users`, {
@@ -599,17 +579,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function displayProfile(user) {
-    let profileName = document.getElementById("profileName");
-    let profileEmail = document.getElementById("profileEmail");
-    let profilePassword = document.getElementById("profilePassword");
-    let profileLocation = document.getElementById("profileLocation");
-    let profileRole = document.getElementById("profileRole");
-
-    profileName.value = user.name;
-    profileEmail.value = user.email;
-    profilePassword.value = "";
-    profileLocation.value = user.location;
-    profileRole.value = user.role;
+    Object.keys(user).forEach((key) => {
+      let element = document.getElementById(
+        `profile${key.charAt(0).toUpperCase() + key.slice(1)}`
+      );
+      if (element) {
+        element.value = key === "password" ? "" : user[key];
+      }
+    });
 
     // Update user profile
     const profileButton = document.getElementById("profileButton");
@@ -618,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
-			const savedRole = localStorage.getItem("role");
+      const savedRole = localStorage.getItem("role");
 
       const name = document.getElementById("profileName").value;
       const email = document.getElementById("profileEmail").value;
@@ -648,10 +625,10 @@ document.addEventListener("DOMContentLoaded", () => {
           alert(updatedUser.error);
         }
 
-				if (updatedUser.role !== savedRole) {
-					localStorage.removeItem("role");
-					localStorage.setItem("role", updatedUser.role);
-				}
+        if (updatedUser.role !== savedRole) {
+          localStorage.removeItem("role");
+          localStorage.setItem("role", updatedUser.role);
+        }
         console.log(updatedUser);
       } catch (error) {
         console.error("Error updating user:", error);
@@ -663,9 +640,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeButtons = document.querySelectorAll(".closeButton");
   closeButtons.forEach((closeButton) => {
     closeButton.addEventListener("click", () => {
-      document.getElementById("loginModal").style.display = "none";
-      document.getElementById("registerModal").style.display = "none";
-      document.getElementById("profileModal").style.display = "none";
+      ["loginModal", "registerModal", "profileModal"].forEach(
+        (modalId) => (document.getElementById(modalId).style.display = "none")
+      );
     });
   });
 });
