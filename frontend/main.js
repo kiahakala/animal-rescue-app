@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Check authentication for the right UI view
   if (localStorage.getItem("token")) {
     console.log("Token found in local storage");
-    document.getElementById("logout").style.display = "block";
-    document.getElementById("profile").style.display = "block";
-    document.getElementById("createPost").style.display = "block";
+    document.getElementById("logout").style.display = "flex";
+    document.getElementById("profile").style.display = "flex";
+    document.getElementById("createPost").style.display = "flex";
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
     fetchPosts();
@@ -89,12 +89,16 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3 id="userPostTitle">${post.title}</h3>
             <p id="userPostDesc">${post.description}</p>
 						<p id="userPostDate">Julkaistu: ${date.toLocaleString("fi-FI")}</p>`;
+      let postControls = document.createElement("div");
+      let postControlsAttr = document.createAttribute("class");
       let delSpan = document.createElement("span");
       let editSpan = document.createElement("span");
       let delAttr = document.createAttribute("class");
       let editAttr = document.createAttribute("class");
+      postControlsAttr.value = "postControls";
       delAttr.value = "delete";
       editAttr.value = "edit";
+      postControls.setAttributeNode(postControlsAttr);
       delSpan.setAttributeNode(delAttr);
       editSpan.setAttributeNode(editAttr);
       let x = document.createTextNode("❌");
@@ -108,6 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(post.id);
         handlePostUpdate(post.id);
       });
+      postControls.appendChild(delSpan);
+      postControls.appendChild(editSpan);
 
       // Add coordinates to the user post element
       let locationElement = document.createElement("p");
@@ -121,14 +127,17 @@ document.addEventListener("DOMContentLoaded", () => {
       lat.innerHTML = `${post.latitude}`;
       lon.innerHTML = `${post.longitude}`;
 
+      [coordinates, lat, lon].forEach((el) => {
+        el.style.display = "none";
+      });
+
       const dataArray = [locationElement, coordinates, lat, lon];
       for (let i = 0; i < dataArray.length; i++) {
         userPostElement.appendChild(dataArray[i]);
       }
 
       // Add controls to the user post element
-      userPostElement.appendChild(delSpan);
-      userPostElement.appendChild(editSpan);
+      userPostElement.appendChild(postControls);
 
       document.getElementById("userPosts").appendChild(userPostElement);
     });
@@ -140,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
       postElement.innerHTML = `
 				<h3 id="postedTitle">${post.title}</h3>
         <p id="postedDesc">${post.description}</p>
-				<p id="postedDate">Posted: ${date.toLocaleString("fi-FI")}</p>
+				<p id="postedDate">Julkaistu: ${date.toLocaleString("fi-FI")}</p>
 			`;
       document.getElementById("posts").appendChild(postElement);
 
@@ -195,7 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("createPost").addEventListener("click", (e) => {
     e.preventDefault();
-    document.getElementById("postForm").style.display = "block";
+    document.getElementById("postForm").style.display = "flex";
+    document.getElementById("postFormTitle").textContent = "Luo ilmoitus";
+    document.getElementById("postButton").textContent = "Lähetä";
     creatingPost = true;
     updateMapClickListener();
   });
@@ -239,9 +250,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cancel post creation
   const cancelPost = document.getElementById("cancelPost");
+	const postForm = document.getElementById("postForm");
 
   cancelPost.addEventListener("click", () => {
-    document.getElementById("postForm").style.display = "none";
+    postForm.style.display = "none";
+		postForm.childNodes.forEach((el) => {
+			if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+				el.value = "";
+			}
+		});
     map.removeLayer(newMarker);
     newMarker = {};
     creatingPost = false;
@@ -298,7 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Confirm post deletion
   function confirmDelete(id) {
     let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
-		confirmDelete && removePost(id);
+    confirmDelete && removePost(id);
   }
 
   // Handle post deletion
@@ -325,7 +342,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function handlePostUpdate(id) {
     editingPost = true;
 
-    document.getElementById("postForm").style.display = "block";
+    document.getElementById("postForm").style.display = "flex";
+    document.getElementById("profileModal").style.display = "none";
+    document.getElementById("postFormTitle").textContent = "Muokkaa ilmoitusta";
+    document.getElementById("postButton").textContent = "Tallenna muutokset";
 
     const post = document.getElementById(id);
 
@@ -400,10 +420,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let userLoggedIn = false;
 
   document.getElementById("login").addEventListener("click", () => {
-    if (document.getElementById("registerModal").style.display === "block") {
+    if (document.getElementById("registerModal").style.display === "flex") {
       document.getElementById("registerModal").style.display = "none";
     }
-    document.getElementById("loginModal").style.display = "block";
+    document.getElementById("loginModal").style.display = "flex";
   });
 
   document.getElementById("loginButton").addEventListener("click", async () => {
@@ -434,12 +454,12 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("role", user.role);
         alert("Login successful!");
 
-				["loginModal", "login", "register"].forEach((el) => {
-					document.getElementById(el).style.display = "none";
-				});
+        ["loginModal", "login", "register"].forEach((el) => {
+          document.getElementById(el).style.display = "none";
+        });
 
         [logout, profile, createPost, posts].forEach((el) => {
-          el.style.display = "block";
+          el.style.display = "flex";
         });
 
         setupLoginInterval();
@@ -486,12 +506,12 @@ document.addEventListener("DOMContentLoaded", () => {
     ["token", "userId", "exp", "role"].forEach((item) => {
       localStorage.removeItem(item);
     });
-		["logout", "profile", "createPost", "posts"].forEach((el) => {
-			document.getElementById(el).style.display = "none";
-		});
-    document.getElementById("login").style.display = "block";
-    document.getElementById("register").style.display = "block";
-    if (document.getElementById("profileModal").style.display === "block") {
+    ["logout", "profile", "createPost", "posts"].forEach((el) => {
+      document.getElementById(el).style.display = "none";
+    });
+    document.getElementById("login").style.display = "flex";
+    document.getElementById("register").style.display = "flex";
+    if (document.getElementById("profileModal").style.display === "flex") {
       document.getElementById("profileModal").style.display = "none";
     }
     alert("Logged out!");
@@ -504,10 +524,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle registration
   document.getElementById("register").addEventListener("click", (e) => {
     e.preventDefault();
-    if (document.getElementById("loginModal").style.display === "block") {
+    if (document.getElementById("loginModal").style.display === "flex") {
       document.getElementById("loginModal").style.display = "none";
     }
-    document.getElementById("registerModal").style.display = "block";
+    document.getElementById("registerModal").style.display = "flex";
   });
 
   document
@@ -547,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle profile
   document.getElementById("profile").addEventListener("click", async (e) => {
     e.preventDefault();
-    document.getElementById("profileModal").style.display = "block";
+    document.getElementById("profileModal").style.display = "flex";
 
     async function fetchUserById(userId) {
       const token = localStorage.getItem("token");
@@ -560,8 +580,6 @@ document.addEventListener("DOMContentLoaded", () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        console.log(userId);
 
         const user = await response.json();
         displayProfile(user);
@@ -629,7 +647,6 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.removeItem("role");
           localStorage.setItem("role", updatedUser.role);
         }
-        console.log(updatedUser);
       } catch (error) {
         console.error("Error updating user:", error);
       }

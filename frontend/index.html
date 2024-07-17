@@ -29,60 +29,81 @@
           <a href="#" id="logout" style="display: none">Kirjaudu ulos</a>
         </nav>
       </header>
+
       <main>
-        <div id="postForm" style="display: none">
-          <h2>Luo ilmoitus</h2>
-          <p id="postInfo">
-            Lisää sijainti klikkaamalla karttaa. Merkin paikkaa voi muuttaa
-            raahaamalla sitä.
-          </p>
+        <form id="postForm" style="display: none">
+          <h2 id="postFormTitle">Luo ilmoitus</h2>
           <input type="text" id="postTitle" placeholder="Otsikko" required />
           <textarea
             id="postDescription"
             placeholder="Kuvaus"
             required
           ></textarea>
+					<p id="postInfo">
+            Lisää sijainti klikkaamalla karttaa. Merkin paikkaa voi muuttaa
+            raahaamalla sitä.
+          </p>
           <input type="text" id="postCoords" placeholder="Sijainti" required />
-          <label for="status">Avoin</label>
-          <input type="checkbox" id="status" checked />
-          <button id="postButton">Lähetä</button>
-          <button id="cancelPost">Peruuta</button>
-        </div>
+          <span class="checkboxControls">
+            <label for="status">Avoin</label>
+            <input type="checkbox" id="status" checked />
+          </span>
+          <span class="controls">
+            <button type="button" id="cancelPost">Peruuta</button>
+            <button type="button" id="postButton">Lähetä</button>
+          </span>
+        </form>
         <div id="map" style="height: 400px"></div>
-        <section id="posts"></section>
+				<div class="mainPostContainer">
+        <h2>Kaikki ilmoitukset</h2>
+				<section id="posts"></section>
+				</div>
       </main>
     </div>
 
     <!-- Profile Modal -->
-    <div id="profileModal" style="display: none">
-      <button class="closeButton">X</button>
+    <dialog id="profileModal" style="display: none">
+      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
       <h2>Profiili</h2>
-      <section id="userPosts"></section>
+			<div class="postContainer">
+				<h3>Ilmoitukset</h3>
+				<section id="userPosts"></section>
+			</div>
+			<div class="userContainer">
+				<h3>Käyttäjätiedot</h3>
+				<label for="profileName">Nimi</label>
       <input type="text" id="profileName" placeholder="Nimi" required />
+			<label for="profileEmail">Sähköpostiosoite</label>
       <input
         type="email"
         id="profileEmail"
         placeholder="Sähköpostiosoite"
         required
       />
+			<label for="profilePassword">Salasana</label>
       <input
         type="password"
         id="profilePassword"
         placeholder="Salasana"
         required
       />
+			<label for="profileLocation">Sijainti</label>
       <input type="text" id="profileLocation" placeholder="Sijainti" required />
-      <select name="role" id="profileRole">
+      <label for="profileRole">Rooli</label>
+			<select name="role" id="profileRole">
         <option value="user">Löytäjä</option>
         <option value="helper">Auttaja</option>
       </select>
-      <button id="profileButton">Päivitä</button>
-      <button class="closeButton">Peruuta</button>
-    </div>
+			</div>
+      <span class="controls">
+        <button type="button" class="closeButton">Peruuta</button>
+        <button type="button" id="profileButton">Päivitä</button>
+      </span>
+    </dialog>
 
     <!-- Login Modal -->
-    <div id="loginModal" style="display: none">
-      <button class="closeButton">X</button>
+    <dialog id="loginModal" style="display: none">
+      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
       <h2>Kirjaudu sisään</h2>
       <input type="text" id="loginName" placeholder="Name" required />
       <input
@@ -91,13 +112,15 @@
         placeholder="Password"
         required
       />
-      <button id="loginButton">Kirjaudu</button>
-      <button class="closeButton">Peruuta</button>
-    </div>
+      <span class="controls">
+        <button type="button" class="closeButton">Peruuta</button>
+        <button type="button" id="loginButton">Kirjaudu</button>
+      </span>
+    </dialog>
 
     <!-- Register Modal -->
-    <div id="registerModal" style="display: none">
-      <button class="closeButton">X</button>
+    <dialog id="registerModal">
+      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
       <h2>Rekisteröidy</h2>
       <input type="text" id="registerName" placeholder="Nimi" required />
       <input
@@ -122,9 +145,11 @@
         <option value="user">Löytäjä</option>
         <option value="helper">Auttaja</option>
       </select>
-      <button id="registerButton">Rekisteröidy</button>
-      <button class="closeButton">Peruuta</button>
-    </div>
+      <span class="controls">
+        <button type="button" class="closeButton">Peruuta</button>
+        <button type="button" id="registerButton">Rekisteröidy</button>
+      </span>
+    </dialog>
 
     <script src="main.js"></script>
   </body>

@@ -50,3 +50,5 @@ Ympäristömuuttujiin on tallennettu merkkijonona digitaalinen allekirjoitus _SE
 Sijaintitieto tuotetaan avoimen lähdekoodin Leaflet.js-kirjaston avulla. Leaflet hyödyntää OpenStreetMapin karttatietoja. Käyttäjä voi lisätä ilmoitukseen sijainnin klikkaamalla karttaa. Sijainti tallennetaan tietokantaan koordinaatteina.
 
 Julkaistuihin ilmoituksiin haetaan kirjallinen sijaintitieto OpenStreetMapin Nominatim-rajapinnasta _reverse geocoding_ -menetelmällä. Rajapinnalle annetaan koordinaatit, ja se palauttaa paikan nimen tai lähimmän osoitteen.
+
+## Jatkokehitys
