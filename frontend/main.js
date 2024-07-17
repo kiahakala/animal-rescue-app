@@ -156,7 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // console.log(post);
 
       if (post.postStatus === "resolved") {
-        postElement.style.backgroundColor = "gray";
+        postElement.style.backgroundColor = "#005357";
+				postElement.style.color = "white";
+				postElement.style.opacity = "0.4";
       } else if (post.postStatus === "open") {
         postElement.style.backgroundColor = "white";
       }
@@ -171,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
               : "assets/pin-animal.png",
           iconSize: [48, 48],
           iconAnchor: [24, 36],
-          popupAnchor: [0, -60],
+          popupAnchor: [0, -40],
         });
 
         let marker = L.marker([post.latitude, post.longitude], {
@@ -183,6 +185,12 @@ document.addEventListener("DOMContentLoaded", () => {
 					<p>${post.description}</p>
 					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
 				`);
+
+				postElement.addEventListener("click", () => {
+					marker.openPopup();
+					map.panTo([post.latitude, post.longitude]);
+					document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+				})
       }
 
       setupMarker(post);

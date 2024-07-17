@@ -37,6 +37,10 @@ h3 {
 	margin: 0.5rem;
 }
 
+.leaflet-popup-content h3 {
+	margin: 0;
+}
+
 p {
 	margin: 0.5rem;
 }
@@ -80,14 +84,19 @@ main {
 .post {
 	display: flex;
 	flex-direction: column;
-  border: 1px solid #ddd;
+  border: 1px solid rgb(63, 217, 202);
   padding: 1rem;
   margin-bottom: 1rem;
+	cursor: pointer;
 }
 
 #map {
   height: 40rem;
 	margin: 1rem 4rem;
+}
+
+.leaflet-container {
+	font-family: 'Poppins', sans-serif !important;
 }
 
 dialog {
