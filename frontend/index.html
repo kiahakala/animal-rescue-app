@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,6 +26,7 @@
           <a href="#" id="register">Rekisteröidy</a>
           <a href="#" id="profile" style="display: none">Profiili</a>
           <a href="#" id="createPost" style="display: none">Luo ilmoitus</a>
+          <a href="#" id="info">Tietoa sovelluksesta</a>
           <a href="#" id="logout" style="display: none">Kirjaudu ulos</a>
         </nav>
       </header>
@@ -39,7 +40,7 @@
             placeholder="Kuvaus"
             required
           ></textarea>
-					<p id="postInfo">
+          <p id="postInfo">
             Lisää sijainti klikkaamalla karttaa. Merkin paikkaa voi muuttaa
             raahaamalla sitä.
           </p>
@@ -54,47 +55,54 @@
           </span>
         </form>
         <div id="map" style="height: 400px"></div>
-				<div class="mainPostContainer">
-        <h2>Kaikki ilmoitukset</h2>
-				<section id="posts"></section>
-				</div>
+        <div class="mainPostContainer">
+          <h2>Kaikki ilmoitukset</h2>
+          <section id="posts"></section>
+        </div>
       </main>
     </div>
 
     <!-- Profile Modal -->
     <dialog id="profileModal" style="display: none">
-      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
+      <button type="button" class="closeButton" style="font-size: 2rem">
+        &times;
+      </button>
       <h2>Profiili</h2>
-			<div class="postContainer">
-				<h3>Ilmoitukset</h3>
-				<section id="userPosts"></section>
-			</div>
-			<div class="userContainer">
-				<h3>Käyttäjätiedot</h3>
-				<label for="profileName">Nimi</label>
-      <input type="text" id="profileName" placeholder="Nimi" required />
-			<label for="profileEmail">Sähköpostiosoite</label>
-      <input
-        type="email"
-        id="profileEmail"
-        placeholder="Sähköpostiosoite"
-        required
-      />
-			<label for="profilePassword">Salasana</label>
-      <input
-        type="password"
-        id="profilePassword"
-        placeholder="Salasana"
-        required
-      />
-			<label for="profileLocation">Sijainti</label>
-      <input type="text" id="profileLocation" placeholder="Sijainti" required />
-      <label for="profileRole">Rooli</label>
-			<select name="role" id="profileRole">
-        <option value="user">Löytäjä</option>
-        <option value="helper">Auttaja</option>
-      </select>
-			</div>
+      <div class="postContainer">
+        <h3>Ilmoitukset</h3>
+        <section id="userPosts"></section>
+      </div>
+      <div class="userContainer">
+        <h3>Käyttäjätiedot</h3>
+        <label for="profileName">Nimi</label>
+        <input type="text" id="profileName" placeholder="Nimi" required />
+        <label for="profileEmail">Sähköpostiosoite</label>
+        <input
+          type="email"
+          id="profileEmail"
+          placeholder="Sähköpostiosoite"
+          required
+        />
+        <label for="profilePassword">Salasana</label>
+        <input
+          type="password"
+          id="profilePassword"
+          placeholder="Salasana"
+          required
+        />
+        <label for="profileLocation">Sijainti</label>
+        <input
+          type="text"
+          id="profileLocation"
+          placeholder="Sijainti"
+          required
+        />
+        <label for="profileRole">Rooli</label>
+        <select name="role" id="profileRole">
+          <option value="user">Löytäjä</option>
+          <option value="helper">Auttaja</option>
+        </select>
+      </div>
       <span class="controls">
         <button type="button" class="closeButton">Peruuta</button>
         <button type="button" id="profileButton">Päivitä</button>
@@ -103,7 +111,9 @@
 
     <!-- Login Modal -->
     <dialog id="loginModal" style="display: none">
-      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
+      <button type="button" class="closeButton" style="font-size: 2rem">
+        &times;
+      </button>
       <h2>Kirjaudu sisään</h2>
       <input type="text" id="loginName" placeholder="Name" required />
       <input
@@ -120,7 +130,9 @@
 
     <!-- Register Modal -->
     <dialog id="registerModal">
-      <button type="button" class="closeButton" autofocus style="font-size: 2rem;">&times;</button>
+      <button type="button" class="closeButton" style="font-size: 2rem">
+        &times;
+      </button>
       <h2>Rekisteröidy</h2>
       <input type="text" id="registerName" placeholder="Nimi" required />
       <input
@@ -148,6 +160,63 @@
       <span class="controls">
         <button type="button" class="closeButton">Peruuta</button>
         <button type="button" id="registerButton">Rekisteröidy</button>
+      </span>
+    </dialog>
+
+    <!-- Info Modal -->
+    <dialog id="infoModal" style="display: none">
+      <button type="button" class="closeButton" style="font-size: 2rem">
+        &times;
+      </button>
+      <h2>Tietoa sovelluksesta</h2>
+      <p>
+        Animal Rescue Appin tarkoitus on yhdistää luonnonvaraisia eläimiä
+        auttavat tahot ja eläinten löytäjät.
+      </p>
+      <p>
+        Hädässä olevien luonnonvaraisten eläinten auttaminen on
+        kansalaisvelvollisuus. Monilla ei kuitenkaan ole resursseja ottaa
+        eläintä omiin hoiviinsa tai tietotaitoa auttaa loukkaantunutta eläintä.
+        Eläinsuojeluyhdistysten piirissä toimii vapaaehtoisia, joilla on
+        tarvittavaa osaamista ja puitteet eläinten hoitoon. Myös eri puolilla
+        Suomea toimivat eläintarhat ja -hoitolat auttavat luonnoneläimiä. Apua
+        tarvitaan yleensä nopeasti. Siksi on tärkeää, että hoitopaikan
+        löytäminen ja kontaktointi on mahdollisimman vaivatonta.
+      </p>
+      <p>
+        Sovelluksen käyttäjäksi voi rekisteröityä auttavana tahona tai eläimen
+        löytäjänä. Roolia voi tarvittaessa muuttaa. Koska sovellus on
+        kehitysvaiheessa, yhteydenotto on toistaiseksi mahdollista vain
+        sähköpostitse. Jatkokehityssuunnitelmana on luoda sovelluksen sisäinen
+        viestintäjärjestelmä.
+      </p>
+      <h3>Ohjeita käyttöön</h3>
+      <p>
+        Rekisteröidy sovellukseen ja kirjaudu sisään. Luo ilmoitus löytämästäsi
+        eläimestä tai tarjoamastasi avusta. Voit myös selata muiden käyttäjien
+        ilmoituksia. Klikkaamalla ilmoitusta listalla näet sen sijainnin
+        kartalla.
+      </p>
+      <p>
+        Profiilissa näet omat ilmoituksesi ja käyttäjätietosi. Käyttäjätietoja
+        voi muokata. Ilmoituksia voi poistaa ja muokata. Jos et halua poistaa
+        ilmoitusta, mutta et odota siihen vastauksia, voit asettaa ilmoituksen
+        "pitoon" poistamalla Avoin-täpän. Käyttäjän vastuulla on poistaa
+        ilmoitukset, eivät ole aktiivisia.
+      </p>
+      <h3>Huom!</h3>
+      <p>
+        Akuutissa eläinsuojelullisessa asiassa ota välittömästi yhteyttä
+        <a
+          href="https://sey.fi/elain-hadassa/luonnonelain-hadassa/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >asiantuntijaan</a
+        >
+        tai soita hätänumeroon 112!
+      </p>
+      <span class="controls">
+        <button type="button" class="closeButton">Sulje</button>
       </span>
     </dialog>
 

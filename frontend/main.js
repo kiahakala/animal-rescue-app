@@ -157,8 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (post.postStatus === "resolved") {
         postElement.style.backgroundColor = "#005357";
-				postElement.style.color = "white";
-				postElement.style.opacity = "0.4";
+        postElement.style.color = "white";
+        postElement.style.opacity = "0.4";
       } else if (post.postStatus === "open") {
         postElement.style.backgroundColor = "white";
       }
@@ -186,10 +186,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					<a href="mailto:${post.user.email}">Lähetä viesti julkaisijalle</a>
 				`);
 
-				postElement.addEventListener("click", () => {
-					marker.openPopup();
-					map.panTo([post.latitude, post.longitude]);
-					document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+        postElement.addEventListener("click", () => {
+          marker.openPopup();
+          map.panTo([post.latitude, post.longitude]);
+          document.getElementById("map").scrollIntoView({ behavior: "smooth" });
 				})
       }
 
@@ -258,15 +258,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cancel post creation
   const cancelPost = document.getElementById("cancelPost");
-	const postForm = document.getElementById("postForm");
+  const postForm = document.getElementById("postForm");
 
   cancelPost.addEventListener("click", () => {
     postForm.style.display = "none";
-		postForm.childNodes.forEach((el) => {
-			if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-				el.value = "";
-			}
-		});
+    postForm.childNodes.forEach((el) => {
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.value = "";
+      }
+    });
     map.removeLayer(newMarker);
     newMarker = {};
     creatingPost = false;
@@ -386,39 +386,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
       postStatus = statusCheckBox.checked ? "open" : "resolved";
 
-      const timestamp = new Date().toISOString();
-      const token = localStorage.getItem("token");
-      const user = localStorage.getItem("userId");
+    const timestamp = new Date().toISOString();
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("userId");
 
-      try {
-        const updatedData = {
-          title,
-          description,
-          user,
-          latitude,
-          longitude,
-          timestamp,
-          postStatus,
-        };
+    try {
+      const updatedData = {
+        title,
+        description,
+        user,
+        latitude,
+        longitude,
+        timestamp,
+        postStatus,
+      };
 
-        const response = await fetch(`${baseUrl}/posts/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(updatedData),
-        });
+      const response = await fetch(`${baseUrl}/posts/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
 
-        const updatedPost = await response.json();
+      const updatedPost = await response.json();
 
-        document.getElementById("postForm").style.display = "none";
-        // console.log(updatedPost);
-      } catch (error) {
-        console.error("Error updating post:", error);
-      }
-      editingPost = false;
-      fetchPosts();
+      document.getElementById("postForm").style.display = "none";
+      // console.log(updatedPost);
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
+    editingPost = false;
+    fetchPosts();
     });
   }
 
@@ -665,9 +665,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeButtons = document.querySelectorAll(".closeButton");
   closeButtons.forEach((closeButton) => {
     closeButton.addEventListener("click", () => {
-      ["loginModal", "registerModal", "profileModal"].forEach(
+      ["loginModal", "registerModal", "profileModal", "infoModal"].forEach(
         (modalId) => (document.getElementById(modalId).style.display = "none")
       );
     });
+  });
+
+  // Handle info modal
+  document.getElementById("info").addEventListener("click", () => {
+    document.getElementById("infoModal").style.display = "flex";
   });
 });
