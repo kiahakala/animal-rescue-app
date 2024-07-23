@@ -5,8 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let editingPost = false;
   let postId = null;
   let markerLocation;
+  let loginInterval;
 
-	const postButton = document.getElementById("postButton");
+  const postButton = document.getElementById("postButton");
 
   // Initialize the map
   const map = L.map("map").setView([51.505, -0.09], 13);
@@ -33,6 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("login").style.display = "none";
     document.getElementById("register").style.display = "none";
     fetchPosts();
+    setupLoginInterval();
   }
 
   // Handle reverse geocoding
@@ -220,8 +222,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("postButton").textContent = "Lähetä";
     creatingPost = true;
 
-		postButton.removeEventListener("click", onUpdate);
-		postButton.addEventListener("click", onCreate);
+    postButton.removeEventListener("click", onUpdate);
+    postButton.addEventListener("click", onCreate);
 
     updateMapClickListener();
   });
@@ -268,14 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
     map.addLayer(newMarker);
   }
 
-  // Cancel post creation
-  const cancelPost = document.getElementById("cancelPost");
-
-  cancelPost.addEventListener("click", () => {
-    resetPostForm();
-    updateMapClickListener();
-  });
-
   statusCheckBox.addEventListener("change", () => {
     postStatus = statusCheckBox.checked ? "open" : "resolved";
   });
@@ -314,6 +308,14 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts();
   }
 
+  // Cancel post creation
+  const cancelPost = document.getElementById("cancelPost");
+
+  cancelPost.addEventListener("click", () => {
+    resetPostForm();
+    updateMapClickListener();
+  });
+
   // Confirm post deletion
   function confirmDelete(id) {
     let confirmDelete = confirm("Haluatko varmasti poistaa ilmoituksen?");
@@ -343,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle post update
   function handlePostUpdate(id) {
     editingPost = true;
-		postId = id;
+    postId = id;
 
     document.getElementById("postForm").style.display = "flex";
     document.getElementById("profileModal").style.display = "none";
@@ -372,10 +374,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMapClickListener();
   }
 
-	function onUpdate(e) {
-		e.preventDefault();
-		updatePost(postId);
-	}
+  function onUpdate(e) {
+    e.preventDefault();
+    updatePost(postId);
+  }
 
   async function updatePost(id) {
     const title = document.getElementById("postTitle").value;
@@ -418,24 +420,24 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchPosts();
   }
 
-	function resetPostForm() {
-		const postForm = document.getElementById("postForm")
-		postForm.style.display = "none";
-		postForm.childNodes.forEach((el) => {
-			if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-				el.value = "";
-			}
-		});
-		map.removeLayer(newMarker);
+  function resetPostForm() {
+    const postForm = document.getElementById("postForm");
+    postForm.style.display = "none";
+    postForm.childNodes.forEach((el) => {
+      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+        el.value = "";
+      }
+    });
+    map.removeLayer(newMarker);
     newMarker = {};
     creatingPost = false;
-		editingPost = false;
-	}
+    editingPost = false;
+  }
 
   // ------------------------- USER SPECIFIC FUNCTIONS -------------------------
 
   // Handle login
-  let userLoggedIn = false;
+  // let userLoggedIn = false;
 
   document.getElementById("login").addEventListener("click", () => {
     if (document.getElementById("registerModal").style.display === "flex") {
@@ -465,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = await response.json();
 
       if (user.token) {
-        userLoggedIn = true;
+        //userLoggedIn = true;
         localStorage.setItem("token", user.token);
         localStorage.setItem("userId", user.id);
         localStorage.setItem("exp", user.decodedToken.exp);
@@ -490,37 +492,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle logout
-  let loginInterval;
-
   // Function to check if the token is expired
   function isTokenExpired() {
     const expiration = localStorage.getItem("exp");
     if (!expiration) return true;
 
-    const now = Date.now() / 1000; // Convert to seconds
-
+    const now = Math.floor(Date.now() / 1000); // Convert from milliseconds to seconds
     return now > expiration;
   }
 
   function setupLoginInterval() {
     // Define the interval and assign it to loginInterval
+    clearInterval(loginInterval);
     loginInterval = setInterval(loginTimer, 60000);
   }
 
   function loginTimer() {
     console.log("Checking token expiration");
-    if (isTokenExpired() && userLoggedIn) {
+    if (isTokenExpired() && localStorage.getItem("token")) {
       logoutUser();
-      //window.location.reload();
       clearInterval(loginInterval);
     }
   }
 
   // Function to log the user out
   function logoutUser() {
-    userLoggedIn = false;
-    clearInterval(loginInterval);
     ["token", "userId", "exp", "role"].forEach((item) => {
       localStorage.removeItem(item);
     });
@@ -537,6 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("logout").addEventListener("click", () => {
     logoutUser();
+    clearInterval(loginInterval);
   });
 
   // Handle registration
@@ -665,7 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.removeItem("role");
           localStorage.setItem("role", updatedUser.role);
         }
-				document.getElementById("profileModal").style.display = "none";
+        document.getElementById("profileModal").style.display = "none";
       } catch (error) {
         console.error("Error updating user:", error);
       }

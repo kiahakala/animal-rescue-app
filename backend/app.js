@@ -8,7 +8,7 @@ const loginRouter = require("./controllers/login");
 const config = require('./utils/config')
 const middleware = require('./utils/middleware')
 
-app.use(express.static('frontend'))
+app.use(express.static('../frontend'))
 
 // cors - allow connection from different domains and ports
 app.use(cors());
