@@ -2,10 +2,10 @@
 
 Sovelluksen nimi: Animal Rescue App
 Tekijä: Kia Hakala
-Päivämäärä: xx.07.2024
+Päivämäärä: 24.07.2024
 Opintojakso: Full Stack -ohjelmointi TTC2080-3027
 
-Linkki sovellukseen:
+Linkki sovellukseen: https://animal-rescue-app.onrender.com/
 Repo: https://github.com/kiahakala/animal-rescue-app
 
 ## Suunnitelma
@@ -31,7 +31,7 @@ Kaikkia toimintoja ei välttämättä implementoida ensimmäiseen versioon, mutt
 - tietokanta: MongoDB
 - autentikointi: JWT (JSON Web Token)
 - sijaintitieto: OpenStreetMap ja Leaflet.js
-- julkaisu: alustavasti Render
+- julkaisu: Render
 
 ## Rakenne
 
@@ -83,7 +83,7 @@ Lisäksi käytössä on useita tapahtumakäsittelijöitä, joiden avulla käytt�
 
 ## Ajan käyttö
 
-Sovelluksen tekemiseen on käytetty arviolta 75 tuntia. Suurin osa ajasta on mennyt JavaScript-koodin kirjoittamiseen ja korjaamiseen. Sijaintitiedon hyödyntäminen web-sovelluksessa oli uutta, joten siihen piti perehtyä erityisesti. Viimeinen haaste ennen ensimmäisen version julkaisemista oli ilmoituslomakkeen muokkaaminen dynaamiseksi niin, että samaa nappia voi käyttää sekä uuden ilmoituksen luomiseen että vanhan muokkaamiseen.
+Sovelluksen tekemiseen on käytetty arviolta 75 tuntia. Suurin osa ajasta on mennyt JavaScript-koodin kirjoittamiseen ja korjaamiseen. Sijaintitiedon hyödyntäminen web-sovelluksessa oli uutta, joten siihen piti perehtyä erityisesti. Viimeinen haaste ennen ensimmäisen version julkaisemista oli ilmoituslomakkeen muokkaaminen dynaamiseksi niin, että samaa nappia voi käyttää sekä uuden ilmoituksen luomiseen että vanhan muokkaamiseen. Tähän upposi aikaa, vaikka ratkaisu oli lopulta yksinkertainen.
 
 ## Jatkokehitys
 
