@@ -3,7 +3,10 @@ const baseUrl = "http://localhost:10000";
 document.addEventListener("DOMContentLoaded", () => {
   let creatingPost = false;
   let editingPost = false;
+  let postId = null;
   let markerLocation;
+
+	const postButton = document.getElementById("postButton");
 
   // Initialize the map
   const map = L.map("map").setView([51.505, -0.09], 13);
@@ -190,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
           marker.openPopup();
           map.panTo([post.latitude, post.longitude]);
           document.getElementById("map").scrollIntoView({ behavior: "smooth" });
-				})
+        });
       }
 
       setupMarker(post);
@@ -216,8 +219,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("postFormTitle").textContent = "Luo ilmoitus";
     document.getElementById("postButton").textContent = "Lähetä";
     creatingPost = true;
+
+		postButton.removeEventListener("click", onUpdate);
+		postButton.addEventListener("click", onCreate);
+
     updateMapClickListener();
   });
+
+  function onCreate(e) {
+    e.preventDefault();
+    createPost();
+  }
 
   function updateMapClickListener() {
     creatingPost || editingPost
@@ -258,33 +270,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cancel post creation
   const cancelPost = document.getElementById("cancelPost");
-  const postForm = document.getElementById("postForm");
 
   cancelPost.addEventListener("click", () => {
-    postForm.style.display = "none";
-    postForm.childNodes.forEach((el) => {
-      if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-        el.value = "";
-      }
-    });
-    map.removeLayer(newMarker);
-    newMarker = {};
-    creatingPost = false;
+    resetPostForm();
     updateMapClickListener();
   });
 
   statusCheckBox.addEventListener("change", () => {
     postStatus = statusCheckBox.checked ? "open" : "resolved";
   });
-
-  const postButton = document.getElementById("postButton");
-
-  postButton.addEventListener("click", onPostButtonClick);
-
-  function onPostButtonClick(e) {
-    e.preventDefault();
-    createPost();
-  }
 
   async function createPost() {
     const title = document.getElementById("postTitle").value;
@@ -311,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const newPost = await response.json();
-      document.getElementById("postForm").style.display = "none";
+      resetPostForm();
       // console.log(newPost);
     } catch (error) {
       console.error("Error creating post:", error);
@@ -349,6 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle post update
   function handlePostUpdate(id) {
     editingPost = true;
+		postId = id;
 
     document.getElementById("postForm").style.display = "flex";
     document.getElementById("profileModal").style.display = "none";
@@ -368,23 +363,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("postDescription").value = description;
     document.getElementById("postCoords").value = `${lat}, ${lon}`;
 
+    postLocation = postLocation.split(": ")[1];
+    postStatus = statusCheckBox.checked ? "open" : "resolved";
+
+    postButton.removeEventListener("click", onCreate);
+    postButton.addEventListener("click", onUpdate);
+
     updateMapClickListener();
+  }
 
-    const postButton = document.getElementById("postButton");
+	function onUpdate(e) {
+		e.preventDefault();
+		updatePost(postId);
+	}
 
-    postButton.removeEventListener("click", onPostButtonClick);
-
-    postButton.addEventListener("click", async (e) => {
-      e.preventDefault();
-
-      title = document.getElementById("postTitle").value;
-      description = document.getElementById("postDescription").value;
-      latitude = document.getElementById("postCoords").value.split(",")[0];
-      longitude = document.getElementById("postCoords").value.split(",")[1];
-
-      postLocation = postLocation.split(": ")[1];
-
-      postStatus = statusCheckBox.checked ? "open" : "resolved";
+  async function updatePost(id) {
+    const title = document.getElementById("postTitle").value;
+    const description = document.getElementById("postDescription").value;
+    const latitude = document.getElementById("postCoords").value.split(",")[0];
+    const longitude = document.getElementById("postCoords").value.split(",")[1];
 
     const timestamp = new Date().toISOString();
     const token = localStorage.getItem("token");
@@ -412,15 +409,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const updatedPost = await response.json();
 
-      document.getElementById("postForm").style.display = "none";
+      resetPostForm();
       // console.log(updatedPost);
     } catch (error) {
       console.error("Error updating post:", error);
     }
     editingPost = false;
     fetchPosts();
-    });
   }
+
+	function resetPostForm() {
+		const postForm = document.getElementById("postForm")
+		postForm.style.display = "none";
+		postForm.childNodes.forEach((el) => {
+			if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+				el.value = "";
+			}
+		});
+		map.removeLayer(newMarker);
+    newMarker = {};
+    creatingPost = false;
+		editingPost = false;
+	}
 
   // ------------------------- USER SPECIFIC FUNCTIONS -------------------------
 
@@ -655,6 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.removeItem("role");
           localStorage.setItem("role", updatedUser.role);
         }
+				document.getElementById("profileModal").style.display = "none";
       } catch (error) {
         console.error("Error updating user:", error);
       }
