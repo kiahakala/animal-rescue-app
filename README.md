@@ -1,12 +1,12 @@
 # HARJOITUSTYÖN DOKUMENTAATIO
 
-Sovelluksen nimi: Animal Rescue App
-Tekijä: Kia Hakala
-Päivämäärä: 24.07.2024
-Opintojakso: Full Stack -ohjelmointi TTC2080-3027
+- Sovelluksen nimi: Animal Rescue App
+- Tekijä: Kia Hakala
+- Päivämäärä: 24.07.2024
+- Opintojakso: Full Stack -ohjelmointi TTC2080-3027
 
-Linkki sovellukseen: https://animal-rescue-app.onrender.com/
-Repo: https://github.com/kiahakala/animal-rescue-app
+- Linkki sovellukseen: https://animal-rescue-app.onrender.com/
+- Repo: https://github.com/kiahakala/animal-rescue-app
 
 ## Suunnitelma
 
